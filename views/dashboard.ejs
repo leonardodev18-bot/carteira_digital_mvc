@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Controle de Gastos | Carteira Digital</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --color-1: #1B365D;
+      --color-2: #005A9C;
+      --color-3: #60C1E5;
+      --color-4: #A0E0EF;
+      --bg-main: #07101c;
+      --text-main: #ffffff;
+      --text-muted: rgba(255, 255, 255, 0.72);
+      --card-bg: linear-gradient(145deg, rgba(27, 54, 93, 0.5) 0%, rgba(7, 16, 28, 0.85) 100%);
+      --card-border: rgba(96, 193, 229, 0.35);
+      --input-bg: rgba(7, 16, 28, 0.8);
+      --input-border: rgba(96, 193, 229, 0.4);
+      --navbar-bg: rgba(7, 16, 28, 0.85);
+      --table-border: rgba(96, 193, 229, 0.15);
+      --accent-title: #60C1E5;
+    }
+
+    body.light-mode {
+      --bg-main: #f0f5fa;
+      --text-main: #1B365D;
+      --text-muted: #526882;
+      --card-bg: rgba(255, 255, 255, 0.92);
+      --card-border: rgba(0, 90, 156, 0.22);
+      --input-bg: #f8fbff;
+      --input-border: rgba(0, 90, 156, 0.35);
+      --navbar-bg: rgba(255, 255, 255, 0.92);
+      --table-border: rgba(27, 54, 93, 0.1);
+      --accent-title: #005A9C;
+    }
+
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      min-height: 100vh;
+    }
+
+    .glass-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      color: var(--text-main);
+    }
+
+    .text-dynamic-muted {
+      color: var(--text-muted) !important;
+    }
+
+    .text-dynamic-accent {
+      color: var(--accent-title) !important;
+    }
+
+    .kpi-limite-badge {
+      display: block;
+      margin-top: 4px;
+      padding-top: 4px;
+      border-top: 1px dashed var(--table-border);
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    .form-control-dark,
+    .form-select-dark {
+      background-color: var(--input-bg);
+      border: 1px solid var(--input-border);
+      color: var(--text-main);
+      border-radius: 12px;
+      padding: 10px 14px;
+    }
+
+    .btn-neon {
+      background: linear-gradient(135deg, var(--color-2), var(--color-3));
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      padding: 10px 24px;
+      font-weight: 800;
+    }
+
+    .btn-outline-neon {
+      color: var(--accent-title);
+      border: 1.5px solid var(--accent-title);
+      border-radius: 50px;
+      padding: 7px 16px;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .btn-outline-danger-pill {
+      background: rgba(220, 53, 69, 0.1);
+      color: #f87171;
+      border: 1.5px solid rgba(220, 53, 69, 0.55);
+      border-radius: 50px;
+      padding: 7px 16px;
+      font-weight: 600;
+    }
+
+    .btn-theme-toggle {
+      background: var(--input-bg);
+      color: var(--accent-title);
+      border: 1px solid var(--card-border);
+      border-radius: 50px;
+      padding: 6px 14px;
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+
+    .btn-fixar {
+      background: var(--input-bg);
+      border: 1.5px solid var(--input-border);
+      color: var(--text-muted);
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      width: 100%;
+    }
+
+    .btn-fixar.ativo {
+      background: rgba(96, 193, 229, 0.2);
+      border-color: var(--accent-title);
+      color: var(--accent-title);
+    }
+
+    .badge-cat {
+      font-size: 0.72rem;
+      padding: 5px 10px;
+      border-radius: 50px;
+      font-weight: 700;
+    }
+
+    .cat-RECEITA {
+      background: rgba(25, 135, 84, 0.2);
+      color: #75b798;
+      border: 1px solid #198754;
+    }
+
+    .cat-FIXA {
+      background: rgba(96, 193, 229, 0.2);
+      color: var(--color-4);
+      border: 1px solid var(--color-3);
+    }
+
+    .cat-VARIAVEL {
+      background: rgba(255, 193, 7, 0.22);
+      color: #ffda6a;
+      border: 1px solid #ffc107;
+    }
+
+    .cat-RESERVA {
+      background: rgba(111, 66, 193, 0.2);
+      color: #c29ffa;
+      border: 1px solid #6f42c1;
+    }
+
+    .badge-mensal {
+      font-size: 0.65rem;
+      padding: 2px 7px;
+      border-radius: 50px;
+      background: rgba(96, 193, 229, 0.15);
+      color: var(--accent-title);
+      border: 1px solid rgba(96, 193, 229, 0.4);
+      font-weight: 700;
+    }
+
+    .table-custom {
+      --bs-table-bg: transparent !important;
+      --bs-table-color: var(--text-main) !important;
+      color: var(--text-main) !important;
+    }
+
+    .table-custom thead th {
+      border-bottom: 1px solid var(--card-border) !important;
+      color: var(--accent-title) !important;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+    }
+
+    .table-custom td {
+      border-bottom: 1px solid var(--table-border) !important;
+      padding: 12px 10px;
+    }
+
+    .valor-receita {
+      color: #4ade80 !important;
+    }
+
+    .valor-despesa {
+      color: #f87171 !important;
+    }
+
+    .valor-reserva {
+      color: #60C1E5 !important;
+    }
+  </style>
+</head>
+
+<body class="<%= usuario.tema === 'light' ? 'light-mode' : '' %> pb-5">
+
+  <nav class="navbar py-3 mb-4" style="background: var(--navbar-bg); border-bottom: 1px solid var(--card-border);">
+    <div class="container d-flex flex-wrap justify-content-between align-items-center gap-3">
+      <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-wallet2 fs-4 text-dynamic-accent"></i>
+        <span class="fw-bold fs-5">Controle <span class="text-dynamic-accent">Financeiro</span></span>
+      </div>
+
+      <div class="d-flex flex-wrap align-items-center gap-2">
+        <form action="/orcamento" method="POST" class="d-inline">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <input type="hidden" name="mes" value="<%= mes %>">
+          <input type="hidden" name="pctFixa" value="<%= orcamento.pct_fixa %>">
+          <input type="hidden" name="pctVariavel" value="<%= orcamento.pct_variavel %>">
+          <input type="hidden" name="pctReserva" value="<%= orcamento.pct_reserva %>">
+          <select name="tipoMetodo" class="btn-theme-toggle"
+            onchange="if(this.value !== 'custom'){ this.form.submit(); } else { document.getElementById('box-custom').classList.remove('d-none'); }">
+            <option value="50-30-20" <%=orcamento.tipo_metodo==='50-30-20' ? 'selected' : '' %>>Método 50 / 30 / 20
+            </option>
+            <option value="70-20-10" <%=orcamento.tipo_metodo==='70-20-10' ? 'selected' : '' %>>Método 70 / 20 / 10
+            </option>
+            <option value="60-30-10" <%=orcamento.tipo_metodo==='60-30-10' ? 'selected' : '' %>>Método 60 / 30 / 10
+            </option>
+            <option value="60-20-20" <%=orcamento.tipo_metodo==='60-20-20' ? 'selected' : '' %>>Método 60 / 20 / 20
+            </option>
+            <option value="custom" <%=orcamento.tipo_metodo==='custom' ? 'selected' : '' %>>Personalizado...</option>
+          </select>
+        </form>
+
+        <form action="/preferencias" method="POST" class="d-inline">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <input type="hidden" name="mes" value="<%= mes %>">
+          <input type="hidden" name="tema" value="<%= usuario.tema %>">
+          <input type="hidden" name="ocultarValores" value="<%= !usuario.ocultar_valores %>">
+          <button type="submit" class="btn-theme-toggle">
+            <i class="bi <%= usuario.ocultar_valores ? 'bi-eye-slash-fill' : 'bi-eye-fill' %>"></i>
+            <span>
+              <%= usuario.ocultar_valores ? 'Mostrar Valores' : 'Ocultar Valores' %>
+            </span>
+          </button>
+        </form>
+
+        <form action="/preferencias" method="POST" class="d-inline">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <input type="hidden" name="mes" value="<%= mes %>">
+          <input type="hidden" name="tema" value="<%= usuario.tema === 'dark' ? 'light' : 'dark' %>">
+          <input type="hidden" name="ocultarValores" value="<%= usuario.ocultar_valores %>">
+          <button type="submit" class="btn-theme-toggle">
+            <i class="bi <%= usuario.tema === 'light' ? 'bi-moon-stars-fill' : 'bi-sun-fill' %>"></i>
+            <span>
+              <%= usuario.tema==='light' ? 'Modo Escuro' : 'Modo Claro' %>
+            </span>
+          </button>
+        </form>
+
+        <form action="/" method="GET" class="d-inline">
+          <input type="month" name="mes" value="<%= mes %>" class="btn-theme-toggle" onchange="this.form.submit()">
+        </form>
+
+        <span class="small d-none d-xl-inline text-dynamic-muted">Olá, <%= usuario.nome %></span>
+
+        <form action="/sair" method="POST" class="d-inline">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3">
+            <i class="bi bi-box-arrow-right"></i> Sair
+          </button>
+        </form>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <% if (aviso) { %>
+      <div class="alert alert-info py-2 small alert-dismissible fade show">
+        <%= aviso %>
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+      <% } %>
+
+        <div id="box-custom"
+          class="glass-card px-4 py-2 mb-3 <%= orcamento.tipo_metodo === 'custom' ? '' : 'd-none' %>">
+          <form action="/orcamento" method="POST"
+            class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <input type="hidden" name="mes" value="<%= mes %>">
+            <input type="hidden" name="tipoMetodo" value="custom">
+            <span class="small fw-bold text-dynamic-accent">Divisão Personalizada:</span>
+            <div class="d-flex align-items-center gap-2 small">
+              <span>Fixas:</span>
+              <input type="number" name="pctFixa" value="<%= Number(orcamento.pct_fixa) %>" min="0" max="100"
+                step="0.01" class="form-control-dark py-1 px-2" style="width:70px;">%
+              <span>Variáveis:</span>
+              <input type="number" name="pctVariavel" value="<%= Number(orcamento.pct_variavel) %>" min="0" max="100"
+                step="0.01" class="form-control-dark py-1 px-2" style="width:70px;">%
+              <span>Reserva:</span>
+              <input type="number" name="pctReserva" value="<%= Number(orcamento.pct_reserva) %>" min="0" max="100"
+                step="0.01" class="form-control-dark py-1 px-2" style="width:70px;">%
+            </div>
+            <button type="submit" class="btn btn-sm btn-neon py-1 px-3">Aplicar (100%)</button>
+          </form>
+        </div>
+
+        <div class="row g-3 mb-4">
+          <div class="col-6 col-md-4 col-xl-2">
+            <div class="glass-card p-3 h-100">
+              <div class="d-flex justify-content-between mb-2">
+                <span class="small text-dynamic-muted">Receita Líquida</span>
+                <i class="bi bi-arrow-up-circle-fill text-success fs-5"></i>
+              </div>
+              <h4 class="fw-bold mb-0 fs-5">
+                <%= moeda(kpis.receita) %>
+              </h4>
+              <small class="text-success fw-semibold" style="font-size: 0.72rem;">100% da base</small>
+            </div>
+          </div>
+
+          <div class="col-6 col-md-4 col-xl-2">
+            <div class="glass-card p-3 h-100">
+              <div class="d-flex justify-content-between mb-2">
+                <span class="small text-dynamic-muted">Despesas Totais</span>
+                <i class="bi bi-arrow-down-circle-fill text-danger fs-5"></i>
+              </div>
+              <h4 class="fw-bold mb-0 fs-5">
+                <%= moeda(kpis.despesasTotais) %>
+              </h4>
+              <small class="text-dynamic-muted" style="font-size: 0.72rem;">
+                <%= usuario.ocultar_valores ? '**' : kpis.pctDespesas %>% da receita
+              </small>
+            </div>
+          </div>
+
+          <div class="col-6 col-md-4 col-xl-2">
+            <div class="glass-card p-3 h-100">
+              <div class="d-flex justify-content-between mb-2">
+                <span class="small text-dynamic-muted">Desp. Fixas</span>
+                <i class="bi bi-house-lock-fill fs-5 text-dynamic-accent"></i>
+              </div>
+              <h4 class="fw-bold mb-0 fs-5">
+                <%= moeda(kpis.fixas) %>
+              </h4>
+              <small class="text-dynamic-accent fw-semibold" style="font-size: 0.72rem;">
+                <%= usuario.ocultar_valores ? '**' : kpis.pctFixas %>% da receita
+              </small>
+              <span
+                class="kpi-limite-badge <%= (kpis.fixas > kpis.tetoFixas && kpis.receita > 0) ? 'text-danger' : '' %>">
+                Teto (<%= Number(orcamento.pct_fixa) %>%): <%= moeda(kpis.tetoFixas) %>
+              </span>
+            </div>
+          </div>
+
+          <div class="col-6 col-md-4 col-xl-2">
+            <div class="glass-card p-3 h-100">
+              <div class="d-flex justify-content-between mb-2">
+                <span class="small text-dynamic-muted">Desp. Variáveis</span>
+                <i class="bi bi-cart-fill text-warning fs-5"></i>
+              </div>
+              <h4 class="fw-bold mb-0 fs-5">
+                <%= moeda(kpis.variaveis) %>
+              </h4>
+              <small class="text-warning fw-semibold" style="font-size: 0.72rem;">
+                <%= usuario.ocultar_valores ? '**' : kpis.pctVariaveis %>% da receita
+              </small>
+              <span
+                class="kpi-limite-badge <%= (kpis.variaveis > kpis.tetoVariaveis && kpis.receita > 0) ? 'text-danger' : '' %>">
+                Teto (<%= Number(orcamento.pct_variavel) %>%): <%= moeda(kpis.tetoVariaveis) %>
+              </span>
+            </div>
+          </div>
+
+          <div class="col-6 col-md-4 col-xl-2">
+            <div class="glass-card p-3 h-100">
+              <div class="d-flex justify-content-between mb-2">
+                <span class="small text-dynamic-muted">Reserva / Invest.</span>
+                <i class="bi bi-piggy-bank-fill fs-5 text-dynamic-accent"></i>
+              </div>
+              <h4 class="fw-bold mb-0 fs-5">
+                <%= moeda(kpis.reserva) %>
+              </h4>
+              <small class="text-dynamic-accent fw-semibold" style="font-size: 0.72rem;">
+                <%= usuario.ocultar_valores ? '**' : kpis.pctReserva %>% da receita
+              </small>
+              <span class="kpi-limite-badge">
+                Meta (<%= Number(orcamento.pct_reserva) %>%): <%= moeda(kpis.metaReserva) %>
+              </span>
+            </div>
+          </div>
+
+          <div class="col-6 col-md-4 col-xl-2">
+            <div class="glass-card p-3 h-100" style="border-color: var(--accent-title);">
+              <div class="d-flex justify-content-between mb-2">
+                <span class="small text-dynamic-muted">Resultado do Mês</span>
+                <i class="bi bi-cash-coin fs-5 text-dynamic-accent"></i>
+              </div>
+              <h4 class="fw-bold mb-0 text-dynamic-accent fs-5">
+                <%= moeda(kpis.resultado) %>
+              </h4>
+              <small class="text-dynamic-muted" style="font-size: 0.72rem;">
+                <%= usuario.ocultar_valores ? '**' : kpis.pctResultado %>% livre no mês
+              </small>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-4 align-items-start">
+          <div class="col-lg-4">
+            <div class="glass-card p-4">
+              <h6 class="fw-bold mb-3"><i class="bi bi-plus-circle-fill me-2 text-dynamic-accent"></i>Nova Movimentação
+              </h6>
+              <form action="/movimentacoes/adicionar" method="POST">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <input type="hidden" name="mesInicio" value="<%= mes %>">
+                <input type="hidden" name="recorrente" id="input-recorrente" value="false">
+
+                <div class="mb-3">
+                  <label class="form-label small text-dynamic-muted">Descrição</label>
+                  <input type="text" name="descricao" maxlength="150" class="form-control form-control-dark"
+                    placeholder="Ex: Salário, Internet, UNIP..." required>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label small text-dynamic-muted">Valor (R$)</label>
+                  <input type="number" step="0.01" min="0.01" name="valor" class="form-control form-control-dark"
+                    placeholder="0,00" required>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label small text-dynamic-muted">Categoria</label>
+                  <select name="categoria" class="form-select form-select-dark" required>
+                    <option value="RECEITA">Receita Líquida</option>
+                    <option value="FIXA">Despesa Fixa (Essencial)</option>
+                    <option value="VARIAVEL">Despesa Variável (Vontades)</option>
+                    <option value="RESERVA">Reserva Financeira (Invest.)</option>
+                  </select>
+                </div>
+
+                <div class="mb-4">
+                  <button type="button" id="btn-fixar" class="btn-fixar" onclick="alternarFixar()">
+                    <i class="bi bi-pin-angle" id="icon-fixar"></i>
+                    <span id="texto-fixar">Fixar para todos os meses</span>
+                  </button>
+                </div>
+
+                <button type="submit" class="btn btn-neon w-100">Adicionar Lançamento</button>
+              </form>
+            </div>
+          </div>
+
+          <div class="col-lg-8">
+            <div class="glass-card p-4">
+              <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                <h6 class="fw-bold mb-0"><i class="bi bi-list-ul me-2 text-dynamic-accent"></i>Extrato do Período</h6>
+                <div class="d-flex align-items-center gap-2">
+                  <button type="button" class="btn btn-sm btn-outline-danger-pill" data-bs-toggle="modal"
+                    data-bs-target="#modalExcluirTudo">
+                    <i class="bi bi-trash3 me-1"></i> Excluir Tudo
+                  </button>
+                  <a href="/exportar-csv?mes=<%= mes %>" class="btn btn-sm btn-outline-neon">
+                    <i class="bi bi-download me-1"></i> Exportar Planilha (CSV)
+                  </a>
+                </div>
+              </div>
+
+              <div class="table-responsive">
+                <table class="table table-custom mb-0">
+                  <thead>
+                    <tr>
+                      <th>Descrição</th>
+                      <th>Categoria</th>
+                      <th>Data</th>
+                      <th class="text-end">Valor</th>
+                      <th class="text-center" style="width: 70px;">Excluir</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% if (extrato.length===0) { %>
+                      <tr>
+                        <td colspan="5" class="text-center text-dynamic-muted py-4">
+                          Nenhuma movimentação registrada neste período.
+                        </td>
+                      </tr>
+                      <% } else { %>
+                        <% extrato.forEach(function(item) { %>
+                          <% var cor='valor-despesa' ; var sinal='- ' ; var nomeCat=item.categoria; if
+                            (item.categoria==='RECEITA' ) { cor='valor-receita' ; sinal='+ ' ; nomeCat='Receita Líquida'
+                            ; } else if (item.categoria==='FIXA' ) { nomeCat='Despesa Fixa' ; } else if
+                            (item.categoria==='VARIAVEL' ) { nomeCat='Despesa Variável' ; } else if
+                            (item.categoria==='RESERVA' ) { cor='valor-reserva' ; sinal='• ' ;
+                            nomeCat='Reserva / Invest.' ; } %>
+                            <tr>
+                              <td class="fw-semibold">
+                                <%= item.descricao %>
+                                  <% if (item.recorrente) { %>
+                                    <span class="badge-mensal ms-1"><i class="bi bi-pin-angle-fill"></i> Fixo</span>
+                                    <% } %>
+                              </td>
+                              <td><span class="badge-cat cat-<%= item.categoria %>">
+                                  <%= nomeCat %>
+                                </span></td>
+                              <td class="text-dynamic-muted small text-nowrap">
+                                <%= item.data_formatada %>
+                              </td>
+                              <td class="text-end fw-bold text-nowrap <%= cor %>">
+                                <%= moeda(item.valor, sinal) %>
+                              </td>
+                              <td class="text-center">
+                                <button type="button" class="btn btn-sm btn-outline-danger" data-id="<%= item.id %>"
+                                  data-descricao="<%= item.descricao %>" data-recorrente="<%= item.recorrente %>"
+                                  onclick="abrirModalExclusao(this)">
+                                  <i class="bi bi-trash3"></i>
+                                </button>
+                              </td>
+                            </tr>
+                            <% }); %>
+                              <% } %>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+  </div>
+
+  <div class="modal fade" id="modalExcluir" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+      <div class="modal-content glass-card p-3 text-center" style="border-color: #dc3545;">
+        <h6 class="fw-bold mb-2">Excluir movimentação?</h6>
+        <p class="small text-dynamic-muted mb-3" id="msg-exclusao"></p>
+        <form action="/movimentacoes/excluir" method="POST" class="d-flex flex-column gap-2">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <input type="hidden" name="id" id="del-id">
+          <input type="hidden" name="mes" value="<%= mes %>">
+          <button type="submit" name="modo" value="simples" id="btn-del-simples"
+            class="btn btn-sm btn-danger rounded-pill fw-bold">Sim, excluir</button>
+          <button type="submit" name="modo" value="apenas-mes" id="btn-del-mes"
+            class="btn btn-sm btn-outline-warning rounded-pill fw-bold d-none">Excluir apenas deste mês</button>
+          <button type="submit" name="modo" value="todos-futuros" id="btn-del-futuros"
+            class="btn btn-sm btn-danger rounded-pill fw-bold d-none">Excluir deste e dos próximos meses</button>
+          <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill"
+            data-bs-dismiss="modal">Cancelar</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="modalExcluirTudo" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+      <div class="modal-content glass-card p-3 text-center" style="border-color: #dc3545;">
+        <h6 class="fw-bold mb-2">Excluir todas as movimentações?</h6>
+        <form action="/movimentacoes/limpar" method="POST" class="d-flex flex-column gap-2">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <input type="hidden" name="mes" value="<%= mes %>">
+          <button type="submit" name="tudoDefinitivo" value="false"
+            class="btn btn-sm btn-outline-warning rounded-pill fw-bold">Limpar apenas este mês</button>
+          <button type="submit" name="tudoDefinitivo" value="true"
+            class="btn btn-sm btn-danger rounded-pill fw-bold">Excluir tudo definitivamente</button>
+          <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill"
+            data-bs-dismiss="modal">Cancelar</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    function alternarFixar() {
+      var input = document.getElementById('input-recorrente');
+      var ativo = input.value === 'true';
+      input.value = (!ativo).toString();
+      document.getElementById('btn-fixar').classList.toggle('ativo', !ativo);
+      document.getElementById('texto-fixar').innerText = !ativo
+        ? 'Fixado para todos os meses'
+        : 'Fixar para todos os meses';
+    }
+
+    function abrirModalExclusao(btn) {
+      var id = btn.getAttribute('data-id');
+      var descricao = btn.getAttribute('data-descricao');
+      var recorrente = btn.getAttribute('data-recorrente') === 'true';
+
+      document.getElementById('del-id').value = id;
+      document.getElementById('msg-exclusao').textContent = 'Remover "' + descricao + '"?';
+      document.getElementById('btn-del-simples').classList.toggle('d-none', recorrente);
+      document.getElementById('btn-del-mes').classList.toggle('d-none', !recorrente);
+      document.getElementById('btn-del-futuros').classList.toggle('d-none', !recorrente);
+      new bootstrap.Modal(document.getElementById('modalExcluir')).show();
+    }
+  </script>
+</body>
+
+</html>
