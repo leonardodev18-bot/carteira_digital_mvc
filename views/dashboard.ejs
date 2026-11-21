@@ -22,7 +22,7 @@
       --card-border: rgba(96, 193, 229, 0.35);
       --input-bg: rgba(7, 16, 28, 0.8);
       --input-border: rgba(96, 193, 229, 0.4);
-      --navbar-bg: rgba(7, 16, 28, 0.85);
+      --navbar-bg: rgba(7, 16, 28, 0.88);
       --table-border: rgba(96, 193, 229, 0.15);
       --accent-title: #60C1E5;
     }
@@ -45,6 +45,7 @@
       background-color: var(--bg-main);
       color: var(--text-main);
       min-height: 100vh;
+      transition: background-color 0.35s ease, color 0.35s ease;
     }
 
     .glass-card {
@@ -52,6 +53,7 @@
       border: 1px solid var(--card-border);
       border-radius: 20px;
       color: var(--text-main);
+      transition: background 0.35s ease, border-color 0.35s ease, color 0.35s ease;
     }
 
     .text-dynamic-muted {
@@ -108,14 +110,166 @@
       font-weight: 600;
     }
 
+    /* Navbar fixa em linha única */
+    .navbar-glass {
+      position: sticky;
+      top: 0;
+      z-index: 1030;
+      background: var(--navbar-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--card-border);
+      transition: background-color 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
+    }
+
+    body.scrolled .navbar-glass {
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    }
+
     .btn-theme-toggle {
       background: var(--input-bg);
       color: var(--accent-title);
       border: 1px solid var(--card-border);
       border-radius: 50px;
       padding: 6px 14px;
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       font-weight: 700;
+      text-decoration: none;
+      transition: all 0.25s ease;
+    }
+
+    .btn-theme-toggle:hover {
+      border-color: var(--accent-title);
+      box-shadow: 0 0 12px rgba(96, 193, 229, 0.25);
+    }
+
+    /* Botões circulares apenas com ícone + transição fluida */
+    .btn-icon-glass {
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--input-bg);
+      color: var(--accent-title);
+      border: 1px solid var(--card-border);
+      font-size: 0.98rem;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition:
+        transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
+        background-color 0.28s ease,
+        border-color 0.28s ease,
+        box-shadow 0.28s ease,
+        color 0.28s ease;
+    }
+
+    .btn-icon-glass:hover {
+      transform: translateY(-2px) scale(1.08);
+      border-color: var(--accent-title);
+      background: rgba(96, 193, 229, 0.16);
+      box-shadow: 0 0 14px rgba(96, 193, 229, 0.38);
+      color: var(--text-main);
+    }
+
+    .btn-icon-glass:active {
+      transform: scale(0.92);
+    }
+
+    .btn-icon-glass i {
+      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+      line-height: 1;
+    }
+
+    .btn-theme-icon:hover i {
+      transform: rotate(32deg) scale(1.12);
+    }
+
+    .btn-eye-icon:hover i {
+      transform: scale(1.15);
+    }
+
+    /* Seletor Gastos | Investimentos com indicador deslizante */
+    .nav-switch {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      background: var(--input-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 50px;
+      padding: 4px;
+      transition: background-color 0.35s ease, border-color 0.35s ease;
+    }
+
+    .nav-glider {
+      position: absolute;
+      top: 4px;
+      bottom: 4px;
+      left: 4px;
+      border-radius: 50px;
+      background: linear-gradient(135deg, var(--color-2), var(--color-3));
+      box-shadow: 0 4px 14px rgba(0, 90, 156, 0.45);
+      transition:
+        transform 0.38s cubic-bezier(0.34, 1.56, 0.64, 1),
+        width 0.38s cubic-bezier(0.34, 1.56, 0.64, 1);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .nav-switch a {
+      position: relative;
+      z-index: 1;
+      padding: 5px 15px;
+      border-radius: 50px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-decoration: none;
+      color: var(--text-muted);
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.28s ease, transform 0.2s ease;
+    }
+
+    .nav-switch a:hover:not(.active) {
+      color: var(--text-main);
+    }
+
+    .nav-switch a.active {
+      color: #ffffff;
+    }
+
+    /* Notificação com entrada e saída suaves (5s) */
+    .alerta-toast-suave {
+      opacity: 0;
+      transform: translateY(-12px) scale(0.98);
+      max-height: 120px;
+      overflow: hidden;
+      transition:
+        opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+        transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+        max-height 0.45s ease,
+        margin 0.45s ease,
+        padding 0.45s ease;
+    }
+
+    .alerta-toast-suave.visivel {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    .alerta-toast-suave.saindo {
+      opacity: 0;
+      transform: translateY(-10px) scale(0.98);
+      max-height: 0;
+      margin-top: 0 !important;
+      margin-bottom: 0 !important;
+      padding-top: 0 !important;
+      padding-bottom: 0 !important;
+      border-width: 0 !important;
     }
 
     .btn-fixar {
@@ -210,21 +364,35 @@
 
 <body class="<%= usuario.tema === 'light' ? 'light-mode' : '' %> pb-5">
 
-  <nav class="navbar py-3 mb-4" style="background: var(--navbar-bg); border-bottom: 1px solid var(--card-border);">
-    <div class="container d-flex flex-wrap justify-content-between align-items-center gap-3">
-      <div class="d-flex align-items-center gap-2">
-        <i class="bi bi-wallet2 fs-4 text-dynamic-accent"></i>
-        <span class="fw-bold fs-5">Controle <span class="text-dynamic-accent">Financeiro</span></span>
+  <nav class="navbar navbar-glass py-2 mb-4">
+    <div class="container d-flex flex-nowrap justify-content-between align-items-center gap-2 overflow-x-auto">
+      <!-- Esquerda: Logo único + Switch Gastos / Investimentos -->
+      <div class="d-flex align-items-center gap-3 flex-nowrap">
+        <div class="d-flex align-items-center gap-2 text-nowrap">
+          <i class="bi bi-wallet2 fs-4 text-dynamic-accent"></i>
+          <span class="fw-bold fs-5">Controle <span class="text-dynamic-accent">Financeiro</span></span>
+        </div>
+
+        <div class="nav-switch" id="navSwitch">
+          <span class="nav-glider" id="navGlider"></span>
+          <a href="/?mes=<%= mes %>" class="active" data-tab="gastos">
+            <i class="bi bi-wallet2"></i> Gastos
+          </a>
+          <a href="/investimentos?mes=<%= mes %>" data-tab="investimentos">
+            <i class="bi bi-pie-chart-fill"></i> Investimentos
+          </a>
+        </div>
       </div>
 
-      <div class="d-flex flex-wrap align-items-center gap-2">
-        <form action="/orcamento" method="POST" class="d-inline">
+      <!-- Direita: Método + Mês + Ícones (Ocultar / Tema) + Sair -->
+      <div class="d-flex align-items-center gap-2 flex-nowrap">
+        <form action="/orcamento" method="POST" class="d-inline m-0">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <input type="hidden" name="mes" value="<%= mes %>">
           <input type="hidden" name="pctFixa" value="<%= orcamento.pct_fixa %>">
           <input type="hidden" name="pctVariavel" value="<%= orcamento.pct_variavel %>">
           <input type="hidden" name="pctReserva" value="<%= orcamento.pct_reserva %>">
-          <select name="tipoMetodo" class="btn-theme-toggle"
+          <select name="tipoMetodo" class="btn-theme-toggle text-nowrap"
             onchange="if(this.value !== 'custom'){ this.form.submit(); } else { document.getElementById('box-custom').classList.remove('d-none'); }">
             <option value="50-30-20" <%=orcamento.tipo_metodo==='50-30-20' ? 'selected' : '' %>>Método 50 / 30 / 20
             </option>
@@ -238,42 +406,43 @@
           </select>
         </form>
 
-        <form action="/preferencias" method="POST" class="d-inline">
+        <form action="/" method="GET" class="d-inline m-0">
+          <input type="month" name="mes" value="<%= mes %>" class="btn-theme-toggle text-nowrap"
+            onchange="this.form.submit()" title="Mês de referência">
+        </form>
+
+        <!-- Botão somente ícone: Ocultar / Mostrar Valores -->
+        <form action="/preferencias" method="POST" class="d-inline m-0">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <input type="hidden" name="mes" value="<%= mes %>">
           <input type="hidden" name="tema" value="<%= usuario.tema %>">
           <input type="hidden" name="ocultarValores" value="<%= !usuario.ocultar_valores %>">
-          <button type="submit" class="btn-theme-toggle">
+          <button type="submit" class="btn-icon-glass btn-eye-icon"
+            title="<%= usuario.ocultar_valores ? 'Mostrar Valores' : 'Ocultar Valores' %>"
+            aria-label="<%= usuario.ocultar_valores ? 'Mostrar Valores' : 'Ocultar Valores' %>">
             <i class="bi <%= usuario.ocultar_valores ? 'bi-eye-slash-fill' : 'bi-eye-fill' %>"></i>
-            <span>
-              <%= usuario.ocultar_valores ? 'Mostrar Valores' : 'Ocultar Valores' %>
-            </span>
           </button>
         </form>
 
-        <form action="/preferencias" method="POST" class="d-inline">
+        <!-- Botão somente ícone: Modo Escuro / Modo Claro -->
+        <form action="/preferencias" method="POST" class="d-inline m-0" id="formToggleTema">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <input type="hidden" name="mes" value="<%= mes %>">
           <input type="hidden" name="tema" value="<%= usuario.tema === 'dark' ? 'light' : 'dark' %>">
           <input type="hidden" name="ocultarValores" value="<%= usuario.ocultar_valores %>">
-          <button type="submit" class="btn-theme-toggle">
+          <button type="submit" class="btn-icon-glass btn-theme-icon"
+            title="<%= usuario.tema === 'light' ? 'Modo Escuro' : 'Modo Claro' %>"
+            aria-label="<%= usuario.tema === 'light' ? 'Modo Escuro' : 'Modo Claro' %>">
             <i class="bi <%= usuario.tema === 'light' ? 'bi-moon-stars-fill' : 'bi-sun-fill' %>"></i>
-            <span>
-              <%= usuario.tema==='light' ? 'Modo Escuro' : 'Modo Claro' %>
-            </span>
           </button>
         </form>
 
-        <form action="/" method="GET" class="d-inline">
-          <input type="month" name="mes" value="<%= mes %>" class="btn-theme-toggle" onchange="this.form.submit()">
-        </form>
+        <span class="small d-none d-xxl-inline text-dynamic-muted text-nowrap">Olá, <%= usuario.nome %></span>
 
-        <span class="small d-none d-xl-inline text-dynamic-muted">Olá, <%= usuario.nome %></span>
-
-        <form action="/sair" method="POST" class="d-inline">
+        <form action="/sair" method="POST" class="d-inline m-0">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-          <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3">
-            <i class="bi bi-box-arrow-right"></i> Sair
+          <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 text-nowrap">
+            <i class="bi bi-box-arrow-right me-1"></i>Sair
           </button>
         </form>
       </div>
@@ -282,9 +451,9 @@
 
   <div class="container">
     <% if (aviso) { %>
-      <div class="alert alert-info py-2 small alert-dismissible fade show">
+      <div id="notificacaoAviso" class="alert alert-info py-2 small alert-dismissible alerta-toast-suave" role="alert">
         <%= aviso %>
-          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          <button type="button" class="btn-close" aria-label="Fechar" onclick="fecharNotificacaoSuave()"></button>
       </div>
       <% } %>
 
@@ -571,6 +740,78 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script>
+    // Notificação com entrada suave e desaparecimento automático em 5s
+    function fecharNotificacaoSuave() {
+      var alerta = document.getElementById('notificacaoAviso');
+      if (!alerta || alerta.classList.contains('saindo')) return;
+      alerta.classList.remove('visivel');
+      alerta.classList.add('saindo');
+      setTimeout(function () {
+        if (alerta && alerta.parentNode) {
+          alerta.parentNode.removeChild(alerta);
+        }
+      }, 480);
+    }
+
+    (function () {
+      var alerta = document.getElementById('notificacaoAviso');
+      if (!alerta) return;
+
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+          alerta.classList.add('visivel');
+        });
+      });
+
+      setTimeout(fecharNotificacaoSuave, 5000);
+    })();
+
+    // Sombra suave na navbar fixa ao rolar
+    window.addEventListener('scroll', function () {
+      document.body.classList.toggle('scrolled', window.scrollY > 12);
+    }, { passive: true });
+
+    // Transição deslizante do seletor Gastos | Investimentos
+    (function () {
+      var navSwitch = document.getElementById('navSwitch');
+      var navGlider = document.getElementById('navGlider');
+      if (!navSwitch || !navGlider) return;
+
+      var links = navSwitch.querySelectorAll('a');
+      function posicionarGlider(alvo, semAnimacao) {
+        if (!alvo) return;
+        if (semAnimacao) navGlider.style.transition = 'none';
+        navGlider.style.width = alvo.offsetWidth + 'px';
+        navGlider.style.transform = 'translateX(' + (alvo.offsetLeft - 4) + 'px)';
+        if (semAnimacao) {
+          navGlider.offsetHeight;
+          navGlider.style.transition = '';
+        }
+      }
+
+      var ativoInicial = navSwitch.querySelector('a.active');
+      posicionarGlider(ativoInicial, true);
+      window.addEventListener('resize', function () {
+        posicionarGlider(navSwitch.querySelector('a.active'), true);
+      });
+
+      links.forEach(function (link) {
+        link.addEventListener('click', function () {
+          links.forEach(function (l) { l.classList.remove('active'); });
+          link.classList.add('active');
+          posicionarGlider(link, false);
+        });
+      });
+    })();
+
+    // Pré-transição instantânea ao alternar tema claro/escuro
+    var formToggleTema = document.getElementById('formToggleTema');
+    if (formToggleTema) {
+      formToggleTema.addEventListener('submit', function () {
+        document.body.classList.toggle('light-mode');
+      });
+    }
+
     function alternarFixar() {
       var input = document.getElementById('input-recorrente');
       var ativo = input.value === 'true';

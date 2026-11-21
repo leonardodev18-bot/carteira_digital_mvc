@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Controle Financeiro | Investimentos</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --color-1: #1B365D;
+      --color-2: #005A9C;
+      --color-3: #60C1E5;
+      --color-4: #A0E0EF;
+      --bg-main: #07101c;
+      --text-main: #ffffff;
+      --text-muted: rgba(255, 255, 255, 0.72);
+      --card-bg: linear-gradient(145deg, rgba(27, 54, 93, 0.5) 0%, rgba(7, 16, 28, 0.85) 100%);
+      --card-border: rgba(96, 193, 229, 0.35);
+      --input-bg: rgba(7, 16, 28, 0.8);
+      --input-border: rgba(96, 193, 229, 0.4);
+      --navbar-bg: rgba(7, 16, 28, 0.88);
+      --table-border: rgba(96, 193, 229, 0.15);
+      --accent-title: #60C1E5;
+    }
+
+    body.light-mode {
+      --bg-main: #f0f5fa;
+      --text-main: #1B365D;
+      --text-muted: #526882;
+      --card-bg: rgba(255, 255, 255, 0.92);
+      --card-border: rgba(0, 90, 156, 0.22);
+      --input-bg: #f8fbff;
+      --input-border: rgba(0, 90, 156, 0.35);
+      --navbar-bg: rgba(255, 255, 255, 0.92);
+      --table-border: rgba(27, 54, 93, 0.1);
+      --accent-title: #005A9C;
+    }
+
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      min-height: 100vh;
+      transition: background-color 0.35s ease, color 0.35s ease;
+    }
+
+    .glass-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      color: var(--text-main);
+      transition: background 0.35s ease, border-color 0.35s ease, color 0.35s ease;
+    }
+
+    .text-dynamic-muted {
+      color: var(--text-muted) !important;
+    }
+
+    .text-dynamic-accent {
+      color: var(--accent-title) !important;
+    }
+
+    .kpi-limite-badge {
+      display: block;
+      margin-top: 4px;
+      padding-top: 4px;
+      border-top: 1px dashed var(--table-border);
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    .form-control-dark,
+    .form-select-dark {
+      background-color: var(--input-bg);
+      border: 1px solid var(--input-border);
+      color: var(--text-main);
+      border-radius: 12px;
+      padding: 10px 14px;
+    }
+
+    .btn-neon {
+      background: linear-gradient(135deg, var(--color-2), var(--color-3));
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      padding: 10px 24px;
+      font-weight: 800;
+    }
+
+    .btn-outline-neon {
+      color: var(--accent-title);
+      border: 1.5px solid var(--accent-title);
+      border-radius: 50px;
+      padding: 7px 16px;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    /* Navbar fixa em linha única */
+    .navbar-glass {
+      position: sticky;
+      top: 0;
+      z-index: 1030;
+      background: var(--navbar-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--card-border);
+      transition: background-color 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
+    }
+
+    body.scrolled .navbar-glass {
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    }
+
+    .btn-theme-toggle {
+      background: var(--input-bg);
+      color: var(--accent-title);
+      border: 1px solid var(--card-border);
+      border-radius: 50px;
+      padding: 6px 14px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.25s ease;
+    }
+
+    .btn-theme-toggle:hover {
+      border-color: var(--accent-title);
+      box-shadow: 0 0 12px rgba(96, 193, 229, 0.25);
+    }
+
+    /* Botões circulares apenas com ícone + transição fluida */
+    .btn-icon-glass {
+      width: 36px;
+      height: 36px;
+      padding: 0;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--input-bg);
+      color: var(--accent-title);
+      border: 1px solid var(--card-border);
+      font-size: 0.98rem;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition:
+        transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
+        background-color 0.28s ease,
+        border-color 0.28s ease,
+        box-shadow 0.28s ease,
+        color 0.28s ease;
+    }
+
+    .btn-icon-glass:hover {
+      transform: translateY(-2px) scale(1.08);
+      border-color: var(--accent-title);
+      background: rgba(96, 193, 229, 0.16);
+      box-shadow: 0 0 14px rgba(96, 193, 229, 0.38);
+      color: var(--text-main);
+    }
+
+    .btn-icon-glass:active {
+      transform: scale(0.92);
+    }
+
+    .btn-icon-glass i {
+      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+      line-height: 1;
+    }
+
+    .btn-theme-icon:hover i {
+      transform: rotate(32deg) scale(1.12);
+    }
+
+    .btn-eye-icon:hover i {
+      transform: scale(1.15);
+    }
+
+    /* Seletor Gastos | Investimentos com indicador deslizante */
+    .nav-switch {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      background: var(--input-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 50px;
+      padding: 4px;
+      transition: background-color 0.35s ease, border-color 0.35s ease;
+    }
+
+    .nav-glider {
+      position: absolute;
+      top: 4px;
+      bottom: 4px;
+      left: 4px;
+      border-radius: 50px;
+      background: linear-gradient(135deg, var(--color-2), var(--color-3));
+      box-shadow: 0 4px 14px rgba(0, 90, 156, 0.45);
+      transition:
+        transform 0.38s cubic-bezier(0.34, 1.56, 0.64, 1),
+        width 0.38s cubic-bezier(0.34, 1.56, 0.64, 1);
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .nav-switch a {
+      position: relative;
+      z-index: 1;
+      padding: 5px 15px;
+      border-radius: 50px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-decoration: none;
+      color: var(--text-muted);
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.28s ease, transform 0.2s ease;
+    }
+
+    .nav-switch a:hover:not(.active) {
+      color: var(--text-main);
+    }
+
+    .nav-switch a.active {
+      color: #ffffff;
+    }
+
+    /* Notificação com entrada e saída suaves (5s) */
+    .alerta-toast-suave {
+      opacity: 0;
+      transform: translateY(-12px) scale(0.98);
+      max-height: 120px;
+      overflow: hidden;
+      transition:
+        opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+        transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+        max-height 0.45s ease,
+        margin 0.45s ease,
+        padding 0.45s ease;
+    }
+
+    .alerta-toast-suave.visivel {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    .alerta-toast-suave.saindo {
+      opacity: 0;
+      transform: translateY(-10px) scale(0.98);
+      max-height: 0;
+      margin-top: 0 !important;
+      margin-bottom: 0 !important;
+      padding-top: 0 !important;
+      padding-bottom: 0 !important;
+      border-width: 0 !important;
+    }
+
+    .badge-classe {
+      font-size: 0.7rem;
+      padding: 4px 10px;
+      border-radius: 50px;
+      font-weight: 700;
+    }
+
+    .cls-FII {
+      background: rgba(96, 193, 229, 0.2);
+      color: var(--color-4);
+      border: 1px solid var(--color-3);
+    }
+
+    .cls-ACAO {
+      background: rgba(25, 135, 84, 0.2);
+      color: #75b798;
+      border: 1px solid #198754;
+    }
+
+    .cls-RENDA_FIXA {
+      background: rgba(111, 66, 193, 0.2);
+      color: #c29ffa;
+      border: 1px solid #6f42c1;
+    }
+
+    .cls-RESERVA {
+      background: rgba(16, 185, 129, 0.2);
+      color: #6ee7b7;
+      border: 1px solid #10b981;
+    }
+
+    .cls-CRIPTO {
+      background: rgba(255, 193, 7, 0.22);
+      color: #ffda6a;
+      border: 1px solid #ffc107;
+    }
+
+    .table-custom {
+      --bs-table-bg: transparent !important;
+      --bs-table-color: var(--text-main) !important;
+      color: var(--text-main) !important;
+    }
+
+    .table-custom thead th {
+      border-bottom: 1px solid var(--card-border) !important;
+      color: var(--accent-title) !important;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+    }
+
+    .table-custom td {
+      border-bottom: 1px solid var(--table-border) !important;
+      padding: 12px 10px;
+      vertical-align: middle;
+    }
+
+    .progress-thin {
+      height: 6px;
+      background-color: rgba(255, 255, 255, 0.12);
+      border-radius: 50px;
+      overflow: hidden;
+    }
+
+    .btn-delete-glass {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.32);
+      color: #f87171;
+      transition: all 0.2s ease;
+    }
+
+    body.light-mode .btn-delete-glass {
+      color: #dc2626;
+      background: rgba(220, 38, 38, 0.08);
+      border-color: rgba(220, 38, 38, 0.25);
+    }
+
+    .btn-delete-glass:hover {
+      background: linear-gradient(135deg, #dc2626, #ef4444);
+      border-color: #ef4444;
+      color: #ffffff !important;
+      transform: scale(1.08);
+      box-shadow: 0 0 14px rgba(239, 68, 68, 0.45);
+    }
+
+    .btn-danger-neon {
+      background: linear-gradient(135deg, #b91c1c, #ef4444);
+      color: #fff;
+      border: none;
+      border-radius: 50px;
+      padding: 9px 22px;
+      font-weight: 700;
+      box-shadow: 0 4px 15px rgba(239, 68, 68, 0.35);
+    }
+
+    .btn-danger-neon:hover {
+      color: #fff;
+      filter: brightness(1.08);
+    }
+
+    .modal-glass .modal-content {
+      background: var(--bg-main);
+      background-image: var(--card-bg);
+      border: 1px solid rgba(239, 68, 68, 0.45);
+      border-radius: 22px;
+      color: var(--text-main);
+      backdrop-filter: blur(16px);
+    }
+  </style>
+</head>
+
+<body class="<%= usuario.tema === 'light' ? 'light-mode' : '' %> pb-5">
+
+  <nav class="navbar navbar-glass py-2 mb-4">
+    <div class="container d-flex flex-nowrap justify-content-between align-items-center gap-2 overflow-x-auto">
+      <!-- Esquerda: Logo + Switch Gastos / Investimentos -->
+      <div class="d-flex align-items-center gap-3 flex-nowrap">
+        <div class="d-flex align-items-center gap-2 text-nowrap">
+          <i class="bi bi-graph-up-arrow fs-4 text-dynamic-accent"></i>
+          <span class="fw-bold fs-5">Controle <span class="text-dynamic-accent">Financeiro</span></span>
+        </div>
+
+        <div class="nav-switch" id="navSwitch">
+          <span class="nav-glider" id="navGlider"></span>
+          <a href="/?mes=<%= fluxoCaixa.mes %>" data-tab="gastos">
+            <i class="bi bi-wallet2"></i> Gastos
+          </a>
+          <a href="/investimentos?mes=<%= fluxoCaixa.mes %>" class="active" data-tab="investimentos">
+            <i class="bi bi-pie-chart-fill"></i> Investimentos
+          </a>
+        </div>
+      </div>
+
+      <!-- Direita: Status API + Mês + Ícones (Ocultar / Tema) + Sair -->
+      <div class="d-flex align-items-center gap-2 flex-nowrap">
+        <% if (statusApi==='api_online' || macro.origem==='bcb_online' ) { %>
+          <span class="badge rounded-pill px-3 py-2 text-nowrap"
+            style="background: rgba(25, 135, 84, 0.2); color: #75b798; border: 1px solid #198754;">
+            <i class="bi bi-broadcast me-1"></i> B3 &amp; BCB Online
+          </span>
+          <% } else { %>
+            <span class="badge rounded-pill px-3 py-2 text-nowrap"
+              style="background: rgba(96, 193, 229, 0.15); color: var(--accent-title); border: 1px solid var(--card-border);">
+              <i class="bi bi-database-check me-1"></i> PostgreSQL Conectado
+            </span>
+            <% } %>
+
+              <form action="/investimentos" method="GET" class="d-inline m-0">
+                <input type="month" name="mes" value="<%= fluxoCaixa.mes %>" class="btn-theme-toggle text-nowrap"
+                  onchange="this.form.submit()" title="Mês de referência">
+              </form>
+
+              <!-- Botão somente ícone: Ocultar / Mostrar Valores -->
+              <form action="/preferencias" method="POST" class="d-inline m-0">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <input type="hidden" name="mes" value="<%= fluxoCaixa.mes %>">
+                <input type="hidden" name="origem" value="investimentos">
+                <input type="hidden" name="tema" value="<%= usuario.tema %>">
+                <input type="hidden" name="ocultarValores" value="<%= !usuario.ocultar_valores %>">
+                <button type="submit" class="btn-icon-glass btn-eye-icon"
+                  title="<%= usuario.ocultar_valores ? 'Mostrar Valores' : 'Ocultar Valores' %>"
+                  aria-label="<%= usuario.ocultar_valores ? 'Mostrar Valores' : 'Ocultar Valores' %>">
+                  <i class="bi <%= usuario.ocultar_valores ? 'bi-eye-slash-fill' : 'bi-eye-fill' %>"></i>
+                </button>
+              </form>
+
+              <!-- Botão somente ícone: Modo Escuro / Modo Claro -->
+              <form action="/preferencias" method="POST" class="d-inline m-0" id="formToggleTema">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <input type="hidden" name="mes" value="<%= fluxoCaixa.mes %>">
+                <input type="hidden" name="origem" value="investimentos">
+                <input type="hidden" name="tema" value="<%= usuario.tema === 'dark' ? 'light' : 'dark' %>">
+                <input type="hidden" name="ocultarValores" value="<%= usuario.ocultar_valores %>">
+                <button type="submit" class="btn-icon-glass btn-theme-icon"
+                  title="<%= usuario.tema === 'light' ? 'Modo Escuro' : 'Modo Claro' %>"
+                  aria-label="<%= usuario.tema === 'light' ? 'Modo Escuro' : 'Modo Claro' %>">
+                  <i class="bi <%= usuario.tema === 'light' ? 'bi-moon-stars-fill' : 'bi-sun-fill' %>"></i>
+                </button>
+              </form>
+
+              <span class="small d-none d-xxl-inline text-dynamic-muted text-nowrap">Olá, <%= usuario.nome %></span>
+
+              <form action="/sair" method="POST" class="d-inline m-0">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 text-nowrap">
+                  <i class="bi bi-box-arrow-right me-1"></i>Sair
+                </button>
+              </form>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <% if (aviso) { %>
+      <div id="notificacaoAviso" class="alert alert-info py-2 small alert-dismissible alerta-toast-suave" role="alert">
+        <%= aviso %>
+          <button type="button" class="btn-close" aria-label="Fechar" onclick="fecharNotificacaoSuave()"></button>
+      </div>
+      <% } %>
+
+        <!-- Indicadores Macroeconômicos Oficiais (Banco Central / SGS) -->
+        <div class="glass-card px-4 py-2 mb-3 d-flex flex-wrap justify-content-between align-items-center gap-2 small">
+          <div class="d-flex flex-wrap align-items-center gap-3">
+            <span class="fw-bold text-dynamic-accent"><i class="bi bi-bank2 me-1"></i> Banco Central (BCB):</span>
+            <span>Selic Meta: <strong class="text-success">
+                <%= macro.selicAnual.toFixed(2).replace('.', ',' ) %>% a.a.
+              </strong></span>
+            <span>CDI Mensal: <strong class="text-success">+<%= macro.taxaMensalCdiPct.toFixed(2).replace('.', ',' ) %>
+                  %/mês</strong></span>
+            <span>IPCA Mês: <strong class="text-danger">-<%= macro.ipcaMensal.toFixed(2).replace('.', ',' ) %>
+                  %/mês</strong></span>
+            <span>IPCA 12m: <strong class="text-warning">
+                <%= macro.ipca12m.toFixed(2).replace('.', ',' ) %>% a.a.
+              </strong></span>
+          </div>
+          <span class="text-dynamic-muted" style="font-size: 0.72rem;">
+            Juro Real CDI: <strong class="text-success">+<%= macro.ganhoRealAnualPct.toFixed(2).replace('.', ',' ) %>%
+                a.a.</strong>
+          </span>
+        </div>
+
+        <!-- 4 KPIs de Patrimônio -->
+        <div class="row g-3 mb-4">
+          <div class="col-6 col-lg-3">
+            <div class="glass-card p-3 h-100" style="border-color: var(--accent-title);">
+              <div class="d-flex justify-content-between mb-2">
+                <span class="small text-dynamic-muted">Patrimônio Atual</span>
+                <i class="bi bi-safe2-fill fs-5 text-dynamic-accent"></i>
+              </div>
+              <h4 class="fw-bold mb-0 text-dynamic-accent">
+                <%= moeda(kpis.patrimonioAtual) %>
+              </h4>
+              <span class="kpi-limite-badge d-flex justify-content-between flex-wrap gap-1">
+                <span>Investido: <%= moeda(kpis.patrimonioInvestido) %></span>
+                <span class="<%= fluxoCaixa.saldoCaixaMes >= 0 ? 'text-success' : 'text-danger' %>">
+                  Caixa: <%= moeda(fluxoCaixa.saldoCaixaMes) %>
+                </span>
+              </span>
+            </div>
+          </div>
+
+          <!-- Card 2: Perdas do Mês (FIIs + Reserva) -->
+          <div class="col-6 col-lg-3">
+            <div class="glass-card p-3 h-100"
+              style="<%= kpis.perdasTotais > 0 ? 'border-color: rgba(248, 113, 113, 0.55);' : '' %>">
+              <div class="d-flex justify-content-between mb-2">
+                <span class="small text-dynamic-muted">Perdas no Mês</span>
+                <i
+                  class="bi bi-graph-down-arrow <%= kpis.perdasTotais > 0 ? 'text-danger' : 'text-dynamic-muted' %> fs-5"></i>
+              </div>
+              <h4 class="fw-bold mb-0 <%= kpis.perdasTotais > 0 ? 'text-danger' : 'text-dynamic-muted' %>">
+                <%= moeda(kpis.perdasTotais, kpis.perdasTotais> 0 ? '- ' : '') %>
+              </h4>
+              <span class="kpi-limite-badge d-flex justify-content-between">
+                <span class="text-danger">FIIs: <%= moeda(kpis.perdasFii, kpis.perdasFii> 0 ? '-' : '') %></span>
+                <span class="text-danger">Reserva: <%= moeda(kpis.perdasReserva, kpis.perdasReserva> 0 ? '-' : '')
+                    %></span>
+              </span>
+            </div>
+          </div>
+
+          <!-- Card 3: Renda Passiva / Mês (FIIs + Reserva) -->
+          <div class="col-6 col-lg-3">
+            <div class="glass-card p-3 h-100">
+              <div class="d-flex justify-content-between mb-2">
+                <span class="small text-dynamic-muted">Renda Passiva / Mês</span>
+                <i class="bi bi-cash-stack text-warning fs-5"></i>
+              </div>
+              <h4 class="fw-bold mb-0 text-warning">
+                <%= moeda(kpis.rendaMensalEstimada) %>
+              </h4>
+              <span class="kpi-limite-badge d-flex justify-content-between">
+                <span class="text-success">FIIs: <%= moeda(kpis.ganhosFiiMes, '+' ) %></span>
+                <span class="text-success">Reserva: <%= moeda(kpis.ganhosReservaMes, '+' ) %></span>
+              </span>
+            </div>
+          </div>
+
+          <div class="col-6 col-lg-3">
+            <div class="glass-card p-3 h-100">
+              <div class="d-flex justify-content-between mb-2">
+                <span class="small text-dynamic-muted">Projeção Anual (12m)</span>
+                <i class="bi bi-snow2 fs-5 text-dynamic-accent"></i>
+              </div>
+              <h4 class="fw-bold mb-0 <%= kpis.patrimonioProjetado12m >= kpis.patrimonioAtual ? '' : 'text-danger' %>">
+                <%= moeda(kpis.patrimonioProjetado12m) %>
+              </h4>
+              <span class="kpi-limite-badge d-flex justify-content-between flex-wrap gap-1">
+                <span class="<%= kpis.economiaAnualProjetada >= 0 ? 'text-dynamic-accent' : 'text-danger' %>">
+                  Fluxo: <%= moeda(kpis.economiaAnualProjetada, kpis.economiaAnualProjetada> 0 ? '+' : '') %>
+                </span>
+                <span class="text-success">
+                  Prov.: <%= moeda(kpis.rendaAnualProjetada, '+' ) %>
+                </span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Formulário de Aporte + Gráfico de Distribuição -->
+        <div class="row g-4 mb-4 align-items-stretch">
+          <div class="col-lg-5">
+            <div class="glass-card p-4 h-100">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="fw-bold mb-0"><i class="bi bi-plus-circle-fill me-2 text-dynamic-accent"></i>Registrar Aporte
+                  / Reserva</h6>
+                <span id="status-busca-ticker" class="small fw-semibold"></span>
+              </div>
+
+              <form action="/investimentos/aportar" method="POST">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <input type="hidden" name="mes" value="<%= fluxoCaixa.mes %>">
+
+                <div class="row g-2 mb-3">
+                  <div class="col-7">
+                    <label id="label-ticker" class="form-label small text-dynamic-muted">Ticker / Nome</label>
+                    <input type="text" name="ticker" id="input-ticker" class="form-control form-control-dark"
+                      placeholder="Ex: MXRF11, CYCR11" autocomplete="off" required>
+                  </div>
+                  <div class="col-5">
+                    <label class="form-label small text-dynamic-muted">Classe</label>
+                    <select name="classe" id="select-classe" class="form-select form-select-dark">
+                      <option value="FII">FII</option>
+                      <option value="RESERVA">Reserva / Caixinha</option>
+                      <option value="RENDA_FIXA">Renda Fixa</option>
+                      <option value="ACAO">Ação</option>
+                      <option value="CRIPTO">Cripto</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="row g-2 mb-3">
+                  <div class="col-4" id="col-qtd">
+                    <label id="label-qtd" class="form-label small text-dynamic-muted">Qtd.</label>
+                    <input type="number" step="0.0001" min="0.0001" name="quantidade" id="input-quantidade"
+                      class="form-control form-control-dark" placeholder="10" required>
+                  </div>
+                  <div class="col-4" id="col-preco">
+                    <label id="label-preco" class="form-label small text-dynamic-muted">Preço Pago</label>
+                    <input type="number" step="0.01" min="0.01" name="precoPago" id="input-preco-pago"
+                      class="form-control form-control-dark" placeholder="Auto" required>
+                  </div>
+                  <div class="col-4" id="col-dividendo">
+                    <label id="label-dividendo" class="form-label small text-dynamic-muted">Div./Cota</label>
+                    <input type="number" step="0.0001" min="0" name="ultimoDividendo" id="input-dividendo"
+                      class="form-control form-control-dark" placeholder="Auto">
+                  </div>
+                </div>
+
+                <div class="form-check mb-4">
+                  <input class="form-check-input" type="checkbox" name="descontarReserva" value="true"
+                    id="integrarGastos" checked>
+                  <label class="form-check-label small text-dynamic-muted" for="integrarGastos">
+                    Descontar automaticamente como <strong>Reserva</strong> no Fluxo de Caixa do mês
+                  </label>
+                </div>
+
+                <button type="submit" class="btn btn-neon w-100">Adicionar à Carteira</button>
+              </form>
+            </div>
+          </div>
+
+          <div class="col-lg-7">
+            <div class="glass-card p-4 h-100 d-flex flex-column justify-content-between">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="fw-bold mb-0"><i class="bi bi-pie-chart-fill me-2 text-dynamic-accent"></i>Alocação Atual na
+                  Carteira</h6>
+                <span class="small text-dynamic-muted">Distribuição por Ativo</span>
+              </div>
+
+              <% if (ativos.length===0) { %>
+                <div class="text-center text-dynamic-muted my-auto py-4">
+                  Adicione seu primeiro ativo ou caixinha ao lado para visualizar o gráfico de alocação.
+                </div>
+                <% } else { %>
+                  <div class="row align-items-center g-3 my-auto">
+                    <div class="col-md-5 d-flex justify-content-center">
+                      <div style="width: 190px; height: 190px;">
+                        <canvas id="graficoAlocacao"></canvas>
+                      </div>
+                    </div>
+                    <div class="col-md-7">
+                      <% ativos.forEach(function(item) { %>
+                        <div class="mb-3">
+                          <div class="d-flex justify-content-between small fw-semibold mb-1">
+                            <span>
+                              <%= item.ticker %>
+                            </span>
+                            <span class="text-dynamic-muted">
+                              Participação: <strong class="text-dynamic-accent">
+                                <%= usuario.ocultar_valores ? '**%' : item.alocacaoAtualPct.toFixed(1) + '%' %>
+                              </strong>
+                            </span>
+                          </div>
+                          <div class="progress-thin">
+                            <div class="progress-bar"
+                              style="width: <%= Math.min(item.alocacaoAtualPct, 100) %>%; background: linear-gradient(90deg, #005A9C, #60C1E5);">
+                            </div>
+                          </div>
+                        </div>
+                        <% }); %>
+                    </div>
+                  </div>
+                  <% } %>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabela de Ativos Consolidados -->
+        <div class="glass-card p-4">
+          <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+            <h6 class="fw-bold mb-0"><i class="bi bi-table me-2 text-dynamic-accent"></i>Posições Consolidadas na
+              Carteira</h6>
+            <a href="/investimentos?mes=<%= fluxoCaixa.mes %>" class="btn btn-sm btn-outline-neon">
+              <i class="bi bi-arrow-repeat me-1"></i> Atualizar Cotações &amp; BCB
+            </a>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table table-custom mb-0">
+              <thead>
+                <tr>
+                  <th>Ativo / Reserva</th>
+                  <th>Classe</th>
+                  <th class="text-end">Qtd. / Saldo</th>
+                  <th class="text-end">Cotação</th>
+                  <th class="text-center">P/VP</th>
+                  <th class="text-end">Rend. / Div.</th>
+                  <th class="text-end">Saldo Total</th>
+                  <th class="text-end">Prov./Mês</th>
+                  <th class="text-center" style="width: 68px;">Remover</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% if (ativos.length===0) { %>
+                  <tr>
+                    <td colspan="9" class="text-center text-dynamic-muted py-4">
+                      Nenhum ativo ou reserva cadastrado na carteira ainda.
+                    </td>
+                  </tr>
+                  <% } else { %>
+                    <% ativos.forEach(function(item) { %>
+                      <% var nomeClasse=item.classe==='RESERVA' ? 'RESERVA' : item.classe.replace('_', ' ' ); var
+                        pvpBadge='text-dynamic-muted' ; var pvpTexto='—' ; if (item.pvp !==null) {
+                        pvpTexto=item.pvp.toFixed(2).replace('.', ',' ); if (item.pvp < 0.98) {
+                        pvpBadge='text-success fw-bold' ; } else if (item.pvp> 1.03) {
+                        pvpBadge = 'text-warning fw-bold';
+                        } else {
+                        pvpBadge = 'text-dynamic-accent fw-bold';
+                        }
+                        }
+                        %>
+                        <tr>
+                          <td class="fw-bold">
+                            <%= item.ticker %>
+                              <% if (item.atualizadoViaApi) { %>
+                                <i class="bi bi-check-circle-fill text-success ms-1"
+                                  title="Sincronizado com API oficial" style="font-size: 0.75rem;"></i>
+                                <% } %>
+                          </td>
+                          <td><span class="badge-classe cls-<%= item.classe %>">
+                              <%= nomeClasse %>
+                            </span></td>
+
+                          <td class="text-end">
+                            <% if (usuario.ocultar_valores) { %>
+                              <div class="d-inline-flex align-items-center justify-content-end gap-1">
+                                <input type="text" value="••••••"
+                                  class="form-control form-control-sm form-control-dark text-end py-1 px-2 text-dynamic-muted"
+                                  style="width: 100px; letter-spacing: 2px;" readonly disabled title="Valores ocultos">
+                                <button type="button" class="btn btn-sm btn-outline-secondary py-1 px-2" disabled
+                                  title="Valores ocultos">
+                                  <i class="bi bi-eye-slash"></i>
+                                </button>
+                              </div>
+                              <% } else if (item.isReservaOuRf) { %>
+                                <form action="/investimentos/atualizar-saldo" method="POST"
+                                  class="d-inline-flex align-items-center justify-content-end gap-1">
+                                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                  <input type="hidden" name="id" value="<%= item.id %>">
+                                  <input type="number" step="0.01" min="0.01" name="saldoAtual"
+                                    value="<%= item.cotacao_atual.toFixed(2) %>"
+                                    class="form-control form-control-sm form-control-dark text-end py-1 px-2"
+                                    style="width: 100px;" title="Atualizar saldo atual" required>
+                                  <button type="submit" class="btn btn-sm btn-outline-success py-1 px-2"
+                                    title="Atualizar saldo">
+                                    <i class="bi bi-check-lg"></i>
+                                  </button>
+                                </form>
+                                <% } else { %>
+                                  <form action="/investimentos/atualizar-quantidade" method="POST"
+                                    class="d-inline-flex align-items-center justify-content-end gap-1">
+                                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                    <input type="hidden" name="id" value="<%= item.id %>">
+                                    <input type="number" step="0.0001" min="0.0001" name="quantidade"
+                                      value="<%= item.quantidade %>"
+                                      class="form-control form-control-sm form-control-dark text-end py-1 px-2"
+                                      style="width: 100px;" title="Salvar nova quantidade" required>
+                                    <button type="submit" class="btn btn-sm btn-outline-info py-1 px-2"
+                                      title="Salvar nova quantidade">
+                                      <i class="bi bi-check-lg"></i>
+                                    </button>
+                                  </form>
+                                  <% } %>
+                          </td>
+
+                          <td class="text-end fw-semibold">
+                            <% if (item.isReservaOuRf) { %>
+                              <span class="text-dynamic-muted">—</span>
+                              <% } else { %>
+                                <%= moeda(item.cotacao_atual) %>
+                                  <% if (item.desvalorizacaoReais> 0) { %>
+                                    <small class="d-block text-danger fw-bold" style="font-size: 0.68rem;">
+                                      Desval.: -<%= moeda(item.desvalorizacaoReais) %> (<%= usuario.ocultar_valores
+                                          ? '**' : item.variacaoExibicaoPct.toFixed(2).replace('.', ',' ) %>%)
+                                    </small>
+                                    <% } else if (item.variacaoExibicaoReais> 0) { %>
+                                      <small class="d-block text-success fw-normal" style="font-size: 0.68rem;">
+                                        +<%= moeda(item.variacaoExibicaoReais) %> (+<%= usuario.ocultar_valores ? '**' :
+                                            item.variacaoExibicaoPct.toFixed(2).replace('.', ',' ) %>%)
+                                      </small>
+                                      <% } else { %>
+                                        <small class="d-block text-dynamic-muted fw-normal" style="font-size: 0.68rem;">
+                                          Estável (0,00%)
+                                        </small>
+                                        <% } %>
+                                          <% } %>
+                          </td>
+
+                          <td class="text-center <%= pvpBadge %>">
+                            <%= pvpTexto %>
+                          </td>
+                          <td class="text-end text-dynamic-muted">
+                            <%= moeda(item.ultimo_dividendo, '' , 4) %>
+                              <small class="d-block" style="font-size: 0.68rem;">
+                                <%= item.isReservaOuRf ? 'CDI ' + item.dyMensalPct.toFixed(2) + '%/mês' : 'DY ' +
+                                  item.dyMensalPct.toFixed(2) + '%/mês' %>
+                              </small>
+                          </td>
+
+                          <td class="text-end fw-bold text-dynamic-accent">
+                            <%= moeda(item.saldoAtual) %>
+                          </td>
+                          <td class="text-end fw-bold text-warning">
+                            <%= moeda(item.proventoMensal) %>
+                              <% if (item.isReservaOuRf) { %>
+                                <small class="d-block text-dynamic-muted fw-normal" style="font-size: 0.66rem;">
+                                  Líq. (-22,5% IR)
+                                </small>
+                                <% } else { %>
+                                  <small class="d-block text-success fw-normal" style="font-size: 0.66rem;">
+                                    Isento IR
+                                  </small>
+                                  <% } %>
+                          </td>
+                          <td class="text-center">
+                            <button type="button" class="btn-delete-glass" title="Remover <%= item.ticker %>"
+                              data-bs-toggle="modal" data-bs-target="#modalExcluirAtivo" data-ativo-id="<%= item.id %>"
+                              data-ativo-ticker="<%= item.ticker %>">
+                              <i class="bi bi-trash3-fill" style="font-size: 0.85rem;"></i>
+                            </button>
+                          </td>
+                        </tr>
+                        <% }); %>
+                          <% } %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+  </div>
+
+  <!-- Modal Estilizado de Confirmação de Exclusão -->
+  <div class="modal fade modal-glass" id="modalExcluirAtivo" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content p-2">
+        <div class="modal-header border-0 pb-1">
+          <div class="d-flex align-items-center gap-2">
+            <span class="d-inline-flex align-items-center justify-content-center rounded-circle"
+              style="width: 38px; height: 38px; background: rgba(239, 68, 68, 0.16); color: #f87171;">
+              <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+            </span>
+            <h6 class="modal-title fw-bold mb-0">Remover Ativo da Carteira</h6>
+          </div>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+        </div>
+        <div class="modal-body pt-2 pb-3">
+          <p class="mb-2 small">
+            Tem certeza que deseja excluir <strong id="modal-ativo-nome" class="text-dynamic-accent"></strong> da sua
+            carteira?
+          </p>
+          <p class="mb-0 small text-dynamic-muted">
+            <i class="bi bi-arrow-left-right me-1 text-warning"></i> Os lançamentos vinculados na categoria
+            <strong>Reserva</strong> da tela de <strong>Gastos</strong> também serão removidos automaticamente.
+          </p>
+        </div>
+        <div class="modal-footer border-0 pt-0">
+          <button type="button" class="btn btn-sm btn-outline-neon" data-bs-dismiss="modal">Cancelar</button>
+          <form action="/investimentos/excluir" method="POST" class="d-inline">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <input type="hidden" name="id" id="modal-input-ativo-id" value="">
+            <input type="hidden" name="mes" value="<%= fluxoCaixa.mes %>">
+            <button type="submit" class="btn btn-sm btn-danger-neon">
+              <i class="bi bi-trash3-fill me-1"></i> Excluir Definitivamente
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    // Notificação com entrada suave e desaparecimento automático em 5s
+    function fecharNotificacaoSuave() {
+      var alerta = document.getElementById('notificacaoAviso');
+      if (!alerta || alerta.classList.contains('saindo')) return;
+      alerta.classList.remove('visivel');
+      alerta.classList.add('saindo');
+      setTimeout(function () {
+        if (alerta && alerta.parentNode) {
+          alerta.parentNode.removeChild(alerta);
+        }
+      }, 480);
+    }
+
+    (function () {
+      var alerta = document.getElementById('notificacaoAviso');
+      if (!alerta) return;
+
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+          alerta.classList.add('visivel');
+        });
+      });
+
+      setTimeout(fecharNotificacaoSuave, 5000);
+    })();
+
+    // Sombra suave na navbar fixa ao rolar
+    window.addEventListener('scroll', function () {
+      document.body.classList.toggle('scrolled', window.scrollY > 12);
+    }, { passive: true });
+
+    // Transição deslizante do seletor Gastos | Investimentos
+    (function () {
+      var navSwitch = document.getElementById('navSwitch');
+      var navGlider = document.getElementById('navGlider');
+      if (!navSwitch || !navGlider) return;
+
+      var links = navSwitch.querySelectorAll('a');
+      function posicionarGlider(alvo, semAnimacao) {
+        if (!alvo) return;
+        if (semAnimacao) navGlider.style.transition = 'none';
+        navGlider.style.width = alvo.offsetWidth + 'px';
+        navGlider.style.transform = 'translateX(' + (alvo.offsetLeft - 4) + 'px)';
+        if (semAnimacao) {
+          navGlider.offsetHeight;
+          navGlider.style.transition = '';
+        }
+      }
+
+      var ativoInicial = navSwitch.querySelector('a.active');
+      posicionarGlider(ativoInicial, true);
+      window.addEventListener('resize', function () {
+        posicionarGlider(navSwitch.querySelector('a.active'), true);
+      });
+
+      links.forEach(function (link) {
+        link.addEventListener('click', function () {
+          links.forEach(function (l) { l.classList.remove('active'); });
+          link.classList.add('active');
+          posicionarGlider(link, false);
+        });
+      });
+    })();
+
+    // Pré-transição instantânea ao alternar tema claro/escuro
+    var formToggleTema = document.getElementById('formToggleTema');
+    if (formToggleTema) {
+      formToggleTema.addEventListener('submit', function () {
+        document.body.classList.toggle('light-mode');
+      });
+    }
+
+    var modalExcluir = document.getElementById('modalExcluirAtivo');
+    if (modalExcluir) {
+      modalExcluir.addEventListener('show.bs.modal', function (event) {
+        var botao = event.relatedTarget;
+        var ativoId = botao.getAttribute('data-ativo-id');
+        var ativoTicker = botao.getAttribute('data-ativo-ticker');
+        document.getElementById('modal-input-ativo-id').value = ativoId;
+        document.getElementById('modal-ativo-nome').textContent = ativoTicker;
+      });
+    }
+
+    var taxaMensalCdi = <%= macro.taxaMensalCdiPct %>;
+    var inputTicker = document.getElementById('input-ticker');
+    var selectClasse = document.getElementById('select-classe');
+    var colQtd = document.getElementById('col-qtd');
+    var colPreco = document.getElementById('col-preco');
+    var colDividendo = document.getElementById('col-dividendo');
+    var inputQtd = document.getElementById('input-quantidade');
+    var inputPreco = document.getElementById('input-preco-pago');
+    var inputDividendo = document.getElementById('input-dividendo');
+    var labelTicker = document.getElementById('label-ticker');
+    var labelPreco = document.getElementById('label-preco');
+    var labelDividendo = document.getElementById('label-dividendo');
+    var statusBusca = document.getElementById('status-busca-ticker');
+    var timerBusca = null;
+    var ultimoTickerConsultado = '';
+
+    function calcularRendimentoCdiFormulario() {
+      var classe = selectClasse.value;
+      if (classe !== 'RESERVA' && classe !== 'RENDA_FIXA') return;
+      var valor = parseFloat(inputPreco.value);
+      if (!Number.isNaN(valor) && valor > 0) {
+        var bruto = valor * (taxaMensalCdi / 100);
+        var liquido = bruto * (1 - 0.225);
+        inputDividendo.value = liquido.toFixed(2);
+      } else {
+        inputDividendo.value = '';
+      }
+    }
+
+    function adaptarCamposPorClasse() {
+      var classe = selectClasse.value;
+      var isReservaOuRf = (classe === 'RESERVA' || classe === 'RENDA_FIXA');
+
+      if (isReservaOuRf) {
+        colQtd.classList.add('d-none');
+        colPreco.className = 'col-6';
+        colDividendo.className = 'col-6';
+        inputQtd.value = '1';
+
+        labelTicker.textContent = 'Nome da Caixinha / Reserva';
+        inputTicker.placeholder = 'Ex: Caixinha Nubank 100% CDI';
+        labelPreco.textContent = 'Valor Guardado';
+        inputPreco.placeholder = '1000,00';
+        labelDividendo.textContent = 'Rend. Líq./Mês';
+        inputDividendo.placeholder = 'Auto BCB';
+        inputDividendo.readOnly = true;
+        statusBusca.className = 'small fw-semibold text-success';
+        statusBusca.textContent = 'BCB Líq. (' + (taxaMensalCdi * (1 - 0.225)).toFixed(2) + '%/mês)';
+        calcularRendimentoCdiFormulario();
+      } else {
+        colQtd.classList.remove('d-none');
+        colPreco.className = 'col-4';
+        colDividendo.className = 'col-4';
+        if (inputQtd.value === '1' && inputDividendo.readOnly) {
+          inputQtd.value = '';
+        }
+
+        labelTicker.textContent = 'Ticker / Nome';
+        inputTicker.placeholder = 'Ex: MXRF11, CYCR11';
+        labelPreco.textContent = 'Preço Pago';
+        inputPreco.placeholder = 'Auto';
+        labelDividendo.textContent = 'Div./Cota';
+        inputDividendo.placeholder = 'Auto';
+        inputDividendo.readOnly = false;
+        statusBusca.textContent = '';
+      }
+    }
+
+    function buscarDadosTicker() {
+      var classe = selectClasse.value;
+      if (classe !== 'FII' && classe !== 'ACAO') return;
+
+      var ticker = inputTicker.value.trim().toUpperCase();
+      inputTicker.value = ticker;
+
+      if (!/^[A-Z]{4}\d{1,2}$/.test(ticker)) {
+        statusBusca.textContent = '';
+        return;
+      }
+
+      if (ticker === ultimoTickerConsultado) return;
+      ultimoTickerConsultado = ticker;
+
+      statusBusca.className = 'small fw-semibold text-dynamic-accent';
+      statusBusca.textContent = 'Buscando ' + ticker + '...';
+
+      fetch('/api/investimentos/cotacao/' + encodeURIComponent(ticker))
+        .then(function (res) { return res.ok ? res.json() : null; })
+        .then(function (dados) {
+          if (dados && dados.sucesso) {
+            inputPreco.value = Number(dados.cotacaoAtual).toFixed(2);
+            inputDividendo.value = Number(dados.ultimoDividendo || 0);
+            statusBusca.className = 'small fw-semibold text-success';
+            statusBusca.textContent = 'B3 OK (' + ticker + ')';
+          } else {
+            statusBusca.className = 'small fw-semibold text-warning';
+            statusBusca.textContent = 'Não encontrado na B3';
+          }
+        })
+        .catch(function () {
+          statusBusca.textContent = '';
+        });
+    }
+
+    inputTicker.addEventListener('input', function () {
+      clearTimeout(timerBusca);
+      timerBusca = setTimeout(buscarDadosTicker, 450);
+    });
+
+    inputPreco.addEventListener('input', calcularRendimentoCdiFormulario);
+    inputTicker.addEventListener('blur', buscarDadosTicker);
+    selectClasse.addEventListener('change', function () {
+      ultimoTickerConsultado = '';
+      adaptarCamposPorClasse();
+      buscarDadosTicker();
+    });
+
+    var ctx = document.getElementById('graficoAlocacao');
+    if (ctx) {
+      new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: [<% - ativos.map(a => "'" + a.ticker + "'").join(',') %>],
+          datasets: [{
+            data: [<%= ativos.map(a => a.saldoAtual.toFixed(2)).join(',') %>],
+            backgroundColor: ['#60C1E5', '#10b981', '#005A9C', '#4ade80', '#a78bfa', '#f59e0b'],
+            borderWidth: 0
+          }]
+        },
+        options: {
+          cutout: '68%',
+          plugins: {
+            legend: { display: false }
+          }
+        }
+      });
+    }
+  </script>
+</body>
+
+</html>

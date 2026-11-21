@@ -114,7 +114,8 @@ class CarteiraController {
     const usuarioId = req.session.usuario.id;
     const { tema, ocultarValores, mes } = req.body;
     await UsuarioModel.atualizarPreferenciasVisuais(usuarioId, tema, ocultarValores === 'true');
-    res.redirect(`/?mes=${mes}`);
+    const destino = req.body.origem === 'investimentos' ? '/investimentos' : `/?mes=${mes}`;
+    res.redirect(destino);
   }
 
   static async excluir(req, res) {
