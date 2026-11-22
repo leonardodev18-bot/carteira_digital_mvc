@@ -27,29 +27,56 @@ class InvestimentoController {
       MacroApiService.buscarIndicadores()
     ]);
 
-    // 2. Consolida fluxo de caixa mensal
+    // 2. Consolida fluxo de caixa mensal separando lançamentos fixados (recorrente) de pontuais
     let receitaMes = 0;
+    let receitaRecorrenteMes = 0;
+    let receitaPontualMes = 0;
+
     let fixasMes = 0;
     let variaveisMes = 0;
     let reservaMes = 0;
 
+    let despesasRecorrentesMes = 0; // Marcadas como "Fixar para todos os meses"
+    let despesasPontuaisMes = 0;    // Lançamentos únicos apenas deste mês
+
     extratoMes.forEach(item => {
-      if (item.categoria === 'RECEITA') receitaMes += item.valor;
-      if (item.categoria === 'FIXA') fixasMes += item.valor;
-      if (item.categoria === 'VARIAVEL') variaveisMes += item.valor;
-      if (item.categoria === 'RESERVA') reservaMes += item.valor;
+      const isRecorrente = Boolean(item.recorrente);
+
+      if (item.categoria === 'RECEITA') {
+        receitaMes += item.valor;
+        if (isRecorrente) {
+          receitaRecorrenteMes += item.valor;
+        } else {
+          receitaPontualMes += item.valor;
+        }
+      }
+
+      if (item.categoria === 'FIXA' || item.categoria === 'VARIAVEL') {
+        if (item.categoria === 'FIXA') fixasMes += item.valor;
+        if (item.categoria === 'VARIAVEL') variaveisMes += item.valor;
+
+        if (isRecorrente) {
+          despesasRecorrentesMes += item.valor;
+        } else {
+          despesasPontuaisMes += item.valor;
+        }
+      }
+
+      if (item.categoria === 'RESERVA') {
+        reservaMes += item.valor;
+      }
     });
 
     const despesasTotaisMes = fixasMes + variaveisMes;
     const saldoCaixaMes = receitaMes - despesasTotaisMes - reservaMes;
     const capacidadeAporteMensal = receitaMes - despesasTotaisMes;
 
-    // 3. Sincroniza cotações, variações e dividendos da B3
+    // 3. Sincroniza cotações, variações mensais e dividendos da B3
     const tickersBolsa = ativosBanco
       .filter(a => a.classe === 'FII' || a.classe === 'ACAO')
       .map(a => a.ticker);
 
-    const { dados: dadosApi, origem: statusApi } = await FiiApiService.buscarDadosAtivos(tickersBolsa);
+    const { dados: dadosApi, origem: statusApi } = await FiiApiService.buscarDadosAtivos(tickersBolsa, mesAtual);
 
     for (const ticker of Object.keys(dadosApi)) {
       await InvestimentoModel.atualizarDadosMercado(usuario.id, ticker, dadosApi[ticker]);
@@ -61,7 +88,7 @@ class InvestimentoController {
 
     let totalAplicado = 0;
     let patrimonioInvestidoBruto = 0;
-    let perdasNaoRefletidasNoSaldo = 0;
+    let perdaInflacaoReservaTotal = 0;
     let ganhosFiiMes = 0;
     let ganhosReservaMes = 0;
     let perdasFii = 0;
@@ -89,7 +116,7 @@ class InvestimentoController {
         const perdaAtivo = Number((Math.max(0, -variacaoNominal) + Math.max(0, perdaInflacaoMes)).toFixed(2));
 
         perdasReserva = Number((perdasReserva + perdaAtivo).toFixed(2));
-        perdasNaoRefletidasNoSaldo = Number((perdasNaoRefletidasNoSaldo + Math.max(0, perdaInflacaoMes)).toFixed(2));
+        perdaInflacaoReservaTotal = Number((perdaInflacaoReservaTotal + Math.max(0, perdaInflacaoMes)).toFixed(2));
         ganhosReservaMes = Number((ganhosReservaMes + rendimentoLiquidoMes).toFixed(2));
         totalAplicado += valorAplicado;
         patrimonioInvestidoBruto += saldoAtual;
@@ -116,34 +143,20 @@ class InvestimentoController {
         };
       }
 
-      // FIIs e Ações (Dividendos isentos de IR + cálculo de desvalorização)
+      // FIIs e Ações: calcula apenas a variação ocorrida dentro do mês selecionado
       const ultimoDividendo = infoApi?.ultimoDividendo > 0 ? infoApi.ultimoDividendo : a.ultimo_dividendo;
       const pvp = infoApi?.pvp !== undefined && infoApi?.pvp !== null ? infoApi.pvp : a.pvp;
       const proventoMensal = Number((a.quantidade * ultimoDividendo).toFixed(2));
       const diferencaPatrimonial = Number((saldoAtual - valorAplicado).toFixed(2));
       const dyMensalPct = cotacaoAtual > 0 ? (ultimoDividendo / cotacaoAtual) * 100 : 0;
 
-      const variacaoCotaReaisApi = infoApi?.variacaoCotaReais ?? 0;
-      const variacaoCotaPctApi = infoApi?.variacaoCotaPct ?? 0;
-      const variacaoMercadoTotal = Number((a.quantidade * variacaoCotaReaisApi).toFixed(2));
+      const variacaoCotaMesReais = infoApi?.variacaoCotaReais ?? 0;
+      const variacaoCotaMesPct = infoApi?.variacaoCotaPct ?? 0;
+      const variacaoMesTotal = Number((a.quantidade * variacaoCotaMesReais).toFixed(2));
 
-      let desvalorizacaoReais = 0;
-      let perdaNaoRefletidaFii = 0;
-
-      if (diferencaPatrimonial < 0) {
-        desvalorizacaoReais = Math.abs(diferencaPatrimonial);
-      } else if (variacaoMercadoTotal < 0) {
-        desvalorizacaoReais = Math.abs(variacaoMercadoTotal);
-        perdaNaoRefletidaFii = desvalorizacaoReais;
-      }
-
-      const variacaoExibicaoReais = diferencaPatrimonial !== 0 ? diferencaPatrimonial : variacaoMercadoTotal;
-      const variacaoExibicaoPct = diferencaPatrimonial !== 0 && valorAplicado > 0
-        ? Number(((diferencaPatrimonial / valorAplicado) * 100).toFixed(2))
-        : variacaoCotaPctApi;
+      const desvalorizacaoReais = variacaoMesTotal < 0 ? Math.abs(variacaoMesTotal) : 0;
 
       perdasFii = Number((perdasFii + desvalorizacaoReais).toFixed(2));
-      perdasNaoRefletidasNoSaldo = Number((perdasNaoRefletidasNoSaldo + perdaNaoRefletidaFii).toFixed(2));
       totalAplicado += valorAplicado;
       patrimonioInvestidoBruto += saldoAtual;
       ganhosFiiMes = Number((ganhosFiiMes + proventoMensal).toFixed(2));
@@ -162,10 +175,10 @@ class InvestimentoController {
         saldoAtual,
         proventoMensal,
         desvalorizacaoReais,
-        variacaoExibicaoReais,
-        variacaoExibicaoPct,
+        variacaoExibicaoReais: variacaoMesTotal,
+        variacaoExibicaoPct: variacaoCotaMesPct,
         lucroReais: diferencaPatrimonial,
-        lucroPct: variacaoExibicaoPct,
+        lucroPct: variacaoCotaMesPct,
         atualizadoViaApi: Boolean(infoApi)
       };
     });
@@ -174,16 +187,25 @@ class InvestimentoController {
       a.alocacaoAtualPct = patrimonioInvestidoBruto > 0 ? (a.saldoAtual / patrimonioInvestidoBruto) * 100 : 0;
     });
 
-    // Abate as perdas no patrimônio investido, no patrimônio atual e na projeção anual
-    const patrimonioInvestido = Math.max(0, Number((patrimonioInvestidoBruto - perdasNaoRefletidasNoSaldo).toFixed(2)));
+    const patrimonioInvestido = Math.max(0, Number((patrimonioInvestidoBruto - perdaInflacaoReservaTotal).toFixed(2)));
     const patrimonioAtual = Number((patrimonioInvestido + saldoCaixaMes).toFixed(2));
     const perdasTotais = Number((perdasFii + perdasReserva).toFixed(2));
     const rendaMensalEstimada = Number((ganhosFiiMes + ganhosReservaMes).toFixed(2));
     const yocCarteiraPct = totalAplicado > 0 ? (rendaMensalEstimada / totalAplicado) * 100 : 0;
 
-    const rendaAnualProjetada = Number((rendaMensalEstimada * 12).toFixed(2));
-    const economiaAnualProjetada = Number((capacidadeAporteMensal * 12).toFixed(2));
-    const patrimonioProjetado12m = Number((patrimonioInvestido + economiaAnualProjetada + rendaAnualProjetada).toFixed(2));
+    // Projeção Anual (12m):
+    // - Multiplica por 12 receitas/despesas marcadas como fixas para todos os meses, renda passiva e perdas mensais
+    // - Despesas/receitas pontuais deste mês são contabilizadas 1x
+    const receitaAnualProjetada = Number((12 * receitaRecorrenteMes + receitaPontualMes).toFixed(2));
+    const rendaAnualProjetada = Number((12 * rendaMensalEstimada).toFixed(2));
+    const entradasAnualProjetada = Number((receitaAnualProjetada + rendaAnualProjetada).toFixed(2));
+    const despesasAnualProjetada = Number((12 * despesasRecorrentesMes + despesasPontuaisMes).toFixed(2));
+    const perdasAnualProjetada = Number((12 * perdasTotais).toFixed(2));
+    const economiaAnualProjetada = Number((receitaAnualProjetada - despesasAnualProjetada).toFixed(2));
+
+    const patrimonioProjetado12m = Number((
+      entradasAnualProjetada - despesasAnualProjetada - perdasAnualProjetada
+    ).toFixed(2));
 
     const mxrf = ativosCalculados.find(a => a.ticker === 'MXRF11');
     const precoCotaRef = mxrf?.cotacao_atual > 0 ? mxrf.cotacao_atual : 10.00;
@@ -220,11 +242,15 @@ class InvestimentoController {
         perdasFii,
         perdasReserva,
         perdasTotais,
+        perdasAnualProjetada,
         ganhosFiiMes,
         ganhosReservaMes,
         rendaMensalEstimada,
+        receitaAnualProjetada,
         rendaAnualProjetada,
         economiaAnualProjetada,
+        entradasAnualProjetada,
+        despesasAnualProjetada,
         patrimonioProjetado12m,
         yocCarteiraPct: yocCarteiraPct.toFixed(2)
       }
@@ -233,7 +259,11 @@ class InvestimentoController {
 
   static async consultarTicker(req, res) {
     const ticker = String(req.params.ticker || '').trim().toUpperCase();
-    const { dados, origem } = await FiiApiService.buscarDadosAtivos([ticker]);
+    if (!/^[A-Z]{4}\d{1,2}$/.test(ticker)) {
+      return res.status(400).json({ sucesso: false, erro: 'Ticker inválido.' });
+    }
+
+    const { dados, origem } = await FiiApiService.buscarDadosAtivos([ticker], obterMesAtual());
     const info = dados[ticker];
 
     if (!info || info.cotacaoAtual <= 0) {
@@ -273,7 +303,12 @@ class InvestimentoController {
 
     if (classeValida === 'FII' || classeValida === 'ACAO') {
       const tickerLimpo = ticker.trim().toUpperCase();
-      const { dados } = await FiiApiService.buscarDadosAtivos([tickerLimpo]);
+      if (!/^[A-Z]{4}\d{1,2}$/.test(tickerLimpo)) {
+        req.session.aviso = 'Informe um ticker válido da B3 (ex: MXRF11).';
+        return res.redirect(`/investimentos?mes=${encodeURIComponent(mesRef)}`);
+      }
+
+      const { dados } = await FiiApiService.buscarDadosAtivos([tickerLimpo], mesRef);
       const infoApi = dados[tickerLimpo];
 
       if (infoApi) {
@@ -295,7 +330,7 @@ class InvestimentoController {
 
     await InvestimentoModel.registrarAporte({
       usuarioId,
-      ticker,
+      ticker: ticker.slice(0, 60),
       classe: classeValida,
       quantidade: qtdNum,
       precoPago: precoNum,
@@ -307,7 +342,7 @@ class InvestimentoController {
     if (descontarReserva === 'true') {
       const valorTotalAporte = Number((qtdNum * precoNum).toFixed(2));
       const nomeDesc = isReservaOuRf
-        ? `Reserva: ${ticker.trim()}`
+        ? `Reserva: ${ticker.trim().slice(0, 100)}`
         : `Aporte: ${ticker.trim().toUpperCase()} (${qtdNum}x)`;
 
       await MovimentacaoModel.criar({

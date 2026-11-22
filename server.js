@@ -8,7 +8,8 @@ const {
   configurarHelmet,
   limiterGeral,
   doubleCsrfProtection,
-  injetarTokenCsrf
+  injetarTokenCsrf,
+  sanitizarEntradas
 } = require('./middlewares/securityMiddleware');
 
 const variaveisObrigatorias = ['DATABASE_URL', 'SESSION_SECRET', 'CSRF_SECRET'];
@@ -31,6 +32,7 @@ app.use(configurarHelmet);
 app.use(limiterGeral);
 app.use(cookieParser(process.env.CSRF_SECRET));
 app.use(express.urlencoded({ extended: false, limit: '20kb' }));
+app.use(sanitizarEntradas);
 
 app.use(session({
   name: 'sid_carteira',

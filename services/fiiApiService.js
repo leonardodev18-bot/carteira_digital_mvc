@@ -21,15 +21,6 @@ class FiiApiService {
         const cotacaoAtual = Number(item.regularMarketPrice) || 0;
         if (!ticker || cotacaoAtual <= 0) continue;
 
-        const fechamentoAnterior = Number(item.regularMarketPreviousClose) || cotacaoAtual;
-        const variacaoCotaReais = item.regularMarketChange !== undefined && item.regularMarketChange !== null
-          ? Number(item.regularMarketChange)
-          : Number((cotacaoAtual - fechamentoAnterior).toFixed(4));
-
-        const variacaoCotaPct = item.regularMarketChangePercent !== undefined && item.regularMarketChangePercent !== null
-          ? Number(item.regularMarketChangePercent)
-          : (fechamentoAnterior > 0 ? Number((((cotacaoAtual - fechamentoAnterior) / fechamentoAnterior) * 100).toFixed(2)) : 0);
-
         let ultimoDividendo = 0;
         const cashDividends = item.dividendsData?.cashDividends;
         if (Array.isArray(cashDividends) && cashDividends.length > 0) {
@@ -43,21 +34,19 @@ class FiiApiService {
         resultado[ticker] = {
           cotacaoAtual,
           ultimoDividendo,
-          pvp,
-          variacaoCotaReais,
-          variacaoCotaPct
+          pvp
         };
       }
     } catch {
-      // Fallback automático para Yahoo Finance B3 (.SA)
+      // Segue para Yahoo B3
     }
 
     return resultado;
   }
 
-  static async buscarViaYahooB3(ticker) {
+  static async buscarHistoricoMensalYahooB3(ticker, mesRef) {
     try {
-      const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}.SA?range=1mo&interval=1d&events=div`;
+      const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(ticker)}.SA?range=3mo&interval=1d&events=div`;
       const response = await fetch(url, {
         headers: { 'User-Agent': 'Mozilla/5.0' },
         signal: AbortSignal.timeout(6000)
@@ -68,14 +57,60 @@ class FiiApiService {
       const json = await response.json();
       const resChart = json?.chart?.result?.[0];
       const meta = resChart?.meta;
-      const cotacaoAtual = Number(meta?.regularMarketPrice) || 0;
+      const timestamps = Array.isArray(resChart?.timestamp) ? resChart.timestamp : [];
+      const quote = resChart?.indicators?.quote?.[0] || {};
+      const opens = quote.open || [];
+      const closes = quote.close || [];
 
-      if (cotacaoAtual <= 0) return null;
+      const cotacaoMercadoYahoo = Number(meta?.regularMarketPrice) || 0;
+      if (cotacaoMercadoYahoo <= 0) return null;
 
-      const fechamentoAnterior = Number(meta?.chartPreviousClose || meta?.previousClose) || cotacaoAtual;
-      const variacaoCotaReais = Number((cotacaoAtual - fechamentoAnterior).toFixed(4));
-      const variacaoCotaPct = fechamentoAnterior > 0
-        ? Number((((cotacaoAtual - fechamentoAnterior) / fechamentoAnterior) * 100).toFixed(2))
+      const [anoStr, mesStr] = String(mesRef || '').split('-');
+      const anoAlvo = Number(anoStr);
+      const mesAlvo = Number(mesStr);
+
+      let cotacaoInicioMes = null;
+      let cotacaoFimMes = cotacaoMercadoYahoo;
+
+      if (anoAlvo > 0 && mesAlvo > 0 && timestamps.length > 0) {
+        const pontosMes = [];
+
+        for (let i = 0; i < timestamps.length; i++) {
+          const fechamento = Number(closes[i]);
+          const abertura = Number(opens[i]);
+          if (!fechamento || Number.isNaN(fechamento)) continue;
+
+          // Converte timestamp B3 (UTC-3) para evitar virada errada de mês no dia 1
+          const dtB3 = new Date((timestamps[i] - 3 * 3600) * 1000);
+          const ano = dtB3.getUTCFullYear();
+          const mes = dtB3.getUTCMonth() + 1;
+
+          if (ano === anoAlvo && mes === mesAlvo) {
+            pontosMes.push({
+              abertura: abertura > 0 ? abertura : fechamento,
+              fechamento
+            });
+          }
+        }
+
+        if (pontosMes.length > 0) {
+          // Usa a abertura do 1º pregão do mês (sem ajuste retroativo de dividendos do mês anterior)
+          cotacaoInicioMes = pontosMes[0].abertura;
+          const hoje = new Date();
+          const mesCorrente = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, '0')}`;
+          cotacaoFimMes = mesRef === mesCorrente
+            ? cotacaoMercadoYahoo
+            : pontosMes[pontosMes.length - 1].fechamento;
+        }
+      }
+
+      if (!cotacaoInicioMes || cotacaoInicioMes <= 0) {
+        cotacaoInicioMes = cotacaoFimMes;
+      }
+
+      const variacaoMesReais = Number((cotacaoFimMes - cotacaoInicioMes).toFixed(4));
+      const variacaoMesPct = cotacaoInicioMes > 0
+        ? Number((((cotacaoFimMes - cotacaoInicioMes) / cotacaoInicioMes) * 100).toFixed(2))
         : 0;
 
       let ultimoDividendo = 0;
@@ -88,18 +123,19 @@ class FiiApiService {
       }
 
       return {
-        cotacaoAtual,
+        cotacaoAtual: cotacaoFimMes,
+        cotacaoInicioMes,
         ultimoDividendo,
         pvp: null,
-        variacaoCotaReais,
-        variacaoCotaPct
+        variacaoCotaReais: variacaoMesReais,
+        variacaoCotaPct: variacaoMesPct
       };
     } catch {
       return null;
     }
   }
 
-  static async buscarDadosAtivos(tickers = []) {
+  static async buscarDadosAtivos(tickers = [], mesRef = null) {
     const listaLimpa = [...new Set(
       tickers
         .map(t => String(t || '').trim().toUpperCase())
@@ -110,16 +146,35 @@ class FiiApiService {
       return { dados: {}, origem: 'sem_ativos' };
     }
 
-    const dados = await this.buscarViaBrapi(listaLimpa);
+    const [dadosBrapi, historicosYahoo] = await Promise.all([
+      this.buscarViaBrapi(listaLimpa),
+      Promise.all(listaLimpa.map(async (ticker) => ({
+        ticker,
+        info: await this.buscarHistoricoMensalYahooB3(ticker, mesRef)
+      })))
+    ]);
 
-    const faltantes = listaLimpa.filter(t => !dados[t]);
-    if (faltantes.length > 0) {
-      await Promise.all(faltantes.map(async (ticker) => {
-        const infoYahoo = await this.buscarViaYahooB3(ticker);
-        if (infoYahoo) {
-          dados[ticker] = infoYahoo;
-        }
-      }));
+    const dados = {};
+    for (const item of historicosYahoo) {
+      const brapi = dadosBrapi[item.ticker];
+      const yahoo = item.info;
+
+      if (!brapi && !yahoo) continue;
+
+      // Usa a mesma fonte (Yahoo B3) para calcular a variação mensal sem distorção entre APIs
+      const cotacaoAtual = yahoo?.cotacaoAtual > 0 ? yahoo.cotacaoAtual : brapi.cotacaoAtual;
+      const cotacaoInicioMes = yahoo?.cotacaoInicioMes > 0 ? yahoo.cotacaoInicioMes : cotacaoAtual;
+      const variacaoCotaReais = yahoo ? yahoo.variacaoCotaReais : 0;
+      const variacaoCotaPct = yahoo ? yahoo.variacaoCotaPct : 0;
+
+      dados[item.ticker] = {
+        cotacaoAtual,
+        cotacaoInicioMes,
+        ultimoDividendo: brapi?.ultimoDividendo > 0 ? brapi.ultimoDividendo : (yahoo?.ultimoDividendo || 0),
+        pvp: brapi?.pvp !== undefined && brapi?.pvp !== null ? brapi.pvp : null,
+        variacaoCotaReais,
+        variacaoCotaPct
+      };
     }
 
     const origem = Object.keys(dados).length > 0 ? 'api_online' : 'banco_local';

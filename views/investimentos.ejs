@@ -546,23 +546,34 @@
             </div>
           </div>
 
+          <!-- Card 4: Projeção Anual (12m) -->
           <div class="col-6 col-lg-3">
             <div class="glass-card p-3 h-100">
               <div class="d-flex justify-content-between mb-2">
                 <span class="small text-dynamic-muted">Projeção Anual (12m)</span>
                 <i class="bi bi-snow2 fs-5 text-dynamic-accent"></i>
               </div>
-              <h4 class="fw-bold mb-0 <%= kpis.patrimonioProjetado12m >= kpis.patrimonioAtual ? '' : 'text-danger' %>">
+              <h4 class="fw-bold mb-0 <%= kpis.patrimonioProjetado12m >= 0 ? 'text-dynamic-accent' : 'text-danger' %>">
                 <%= moeda(kpis.patrimonioProjetado12m) %>
               </h4>
-              <span class="kpi-limite-badge d-flex justify-content-between flex-wrap gap-1">
-                <span class="<%= kpis.economiaAnualProjetada >= 0 ? 'text-dynamic-accent' : 'text-danger' %>">
-                  Fluxo: <%= moeda(kpis.economiaAnualProjetada, kpis.economiaAnualProjetada> 0 ? '+' : '') %>
-                </span>
-                <span class="text-success">
-                  Prov.: <%= moeda(kpis.rendaAnualProjetada, '+' ) %>
-                </span>
-              </span>
+              <div class="kpi-limite-badge d-flex flex-column gap-1">
+                <div class="d-flex justify-content-between flex-wrap gap-1">
+                  <span class="text-success">
+                    Receita: <%= moeda(kpis.receitaAnualProjetada, '+' ) %>
+                  </span>
+                  <span class="text-success">
+                    Prov.: <%= moeda(kpis.rendaAnualProjetada, '+' ) %>
+                  </span>
+                </div>
+                <div class="d-flex justify-content-between flex-wrap gap-1">
+                  <span class="text-danger">
+                    Gastos: <%= moeda(kpis.despesasAnualProjetada, '-' ) %>
+                  </span>
+                  <span class="text-danger">
+                    Perdas: <%= moeda(kpis.perdasAnualProjetada, '-' ) %>
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
